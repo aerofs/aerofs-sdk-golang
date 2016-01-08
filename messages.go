@@ -24,7 +24,7 @@ type NewName struct {
 type Access struct {
 	Token      string `json:"access_token"`
 	TokenType  string `json:"token_type"`
-	ExpireTime string `json:"expires_in"`
+	ExpireTime int    `json:"expires_in"`
 	Scope      string `json:"scope"`
 }
 

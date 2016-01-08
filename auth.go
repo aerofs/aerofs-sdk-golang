@@ -29,16 +29,16 @@ func (auth *AuthClient) GetAuthCode() string {
 }
 
 // Retrieve User Authorization token
-func (auth *AuthClient) GetAcessToken(code string) (string, error) {
-	params := fmt.Sprintf(
-		"client_id=%v&"+
-			"client_secret=%v&"+
-			"redirect_uri=%v&"+
-			"grant_type=authorization_code&"+
-			"code=%v", auth.Config.Id, auth.Config.Secret, auth.Config.Redirect, code)
+func (auth *AuthClient) GetAccessToken(code string) (string, error) {
+	data := fmt.Sprintf(
+		"grant_type=authorization_code&"+
+			"code=%s&"+
+			"client_id=%s&"+
+			"client_secret=%s&"+
+			"redirect_uri=%s", code, auth.Config.Id, auth.Config.Secret, auth.Config.Redirect)
 	route := "auth/token"
 	url := fmt.Sprintf("https://%v/%v", auth.AppUrl, route)
-	body := bytes.NewBuffer([]byte(params))
+	body := bytes.NewBuffer([]byte(data))
 
 	res, err := http.Post(url, "application/x-www-form-urlencoded", body)
 	if err != nil {
@@ -47,6 +47,6 @@ func (auth *AuthClient) GetAcessToken(code string) (string, error) {
 
 	accessResponse := Access{}
 	err = GetEntity(res, &accessResponse)
-
+	fmt.Println(accessResponse)
 	return accessResponse.Token, err
 }

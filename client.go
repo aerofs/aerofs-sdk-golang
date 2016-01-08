@@ -30,21 +30,16 @@ func (c *Client) ListUsers(limit int) ([]User, error) {
 	route := "users"
 	params := "limit=" + string(limit)
 	url := c.getPrefix() + route + params
+
 	res, err := http.Get(url)
 	defer res.Body.Close()
 
 	if err != nil {
 		return []User{}, err
 	}
-	/*
-		data, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			return []User{}, err
-		}
-	*/
+
 	user := []User{}
 	err = GetEntity(res, &user)
-	//err = json.Unmarshal(data, &user)
 	return user, err
 }
 
