@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -18,27 +19,31 @@ type AuthClient struct {
 // Return the destination URL for user 3rd-party app authorization
 func (auth *AuthClient) GetAuthCode() string {
 	scopes := strings.Join(auth.Config.Scopes, ",")
-	params := fmt.Sprintf(
-		"?response_type=code&"+
-			"client_id=%v&"+
-			"redirect_uri=%v"+
-			"scope=%v", auth.Config.Id, auth.Config.Redirect, scopes)
+	v := url.Values{}
+	v.Set("response_type", "code")
+	v.Set("client_id", auth.Config.Id)
+	v.Set("redirect_uri", auth.Config.Redirect)
+	v.Set("scope", scopes)
+	query := v.Encode()
 	route := "authorize"
-	url := fmt.Sprintf("https://%v/%v/%v", auth.AppUrl, route, params)
+
+	url := fmt.Sprintf("https://%v/%v/?%v", auth.AppUrl, route, query)
 	return url
 }
 
 // Retrieve User Authorization token
 func (auth *AuthClient) GetAccessToken(code string) (string, error) {
-	data := fmt.Sprintf(
-		"grant_type=authorization_code&"+
-			"code=%s&"+
-			"client_id=%s&"+
-			"client_secret=%s&"+
-			"redirect_uri=%s", code, auth.Config.Id, auth.Config.Secret, auth.Config.Redirect)
+	v := url.Values{}
+	v.Set("grant_type", "authorization_code")
+	v.Set("code", code)
+	v.Set("client_id", auth.Config.Id)
+	v.Set("client_secret", auth.Config.Secret)
+	v.Set("redirect_uri", auth.Config.Redirect)
+	data := v.Encode()
+	body := bytes.NewBuffer([]byte(data))
+
 	route := "auth/token"
 	url := fmt.Sprintf("https://%v/%v", auth.AppUrl, route)
-	body := bytes.NewBuffer([]byte(data))
 
 	res, err := http.Post(url, "application/x-www-form-urlencoded", body)
 	if err != nil {
@@ -47,6 +52,5 @@ func (auth *AuthClient) GetAccessToken(code string) (string, error) {
 
 	accessResponse := Access{}
 	err = GetEntity(res, &accessResponse)
-	fmt.Println(accessResponse)
 	return accessResponse.Token, err
 }

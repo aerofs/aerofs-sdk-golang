@@ -1,8 +1,11 @@
 package aerofs
 
-import "encoding/json"
-import "net/http"
-import "io/ioutil"
+import (
+	"encoding/json"
+	"errors"
+	"io/ioutil"
+	"net/http"
+)
 
 // Structures used when communicating with an AeroFS Appliance
 
@@ -83,7 +86,7 @@ type User struct {
 type Invitee struct {
 	EmailTo    string `json:"email_to"`
 	EmailFrom  string `json:"email_from"`
-	SignupCode string `json:"signup_code"`
+	SignupCode string `json:"signup_code,omitempty"`
 }
 
 type Invitation struct {
@@ -93,14 +96,19 @@ type Invitation struct {
 	Permissions []string `json:"permissions"`
 }
 
+// Response specific structures
+
+type ListUserResponse struct {
+	HasMore bool   `json:"has_more"`
+	Users   []User `json:"data"`
+}
+
 // Unmarshalls data from an HTTP response given a response struct
 func GetEntity(res *http.Response, entity interface{}) error {
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return err
+		return errors.New("Unable to parse HTTP Response")
 	}
 
 	return json.Unmarshal(data, entity)
 }
-
-//prefix, route, params, data, header
