@@ -128,6 +128,19 @@ type Invitation struct {
 	Permissions []string `json:"permissions"`
 }
 
+type Device struct {
+	Id          string `json:"id"`
+	Owner       string `json:"owner"`
+	Name        string `json:"name"`
+	OSFamily    string `json:"os_family"`
+	InstallDate string `json:"install_data"`
+}
+
+type DeviceStatus struct {
+	Online   bool   `json:"online"`
+	LastSeen string `json:"last_seen"`
+}
+
 // Response specific structures
 
 type ListUserResponse struct {

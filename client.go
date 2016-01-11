@@ -433,3 +433,57 @@ func (c *Client) RemoveMember(groupID, email string) error {
 	defer res.Body.Close()
 	return err
 }
+
+// Device specific API Calls
+func (c *Client) ListDevices(email string) (*[]Device, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "users", email, "devices"}, "/"),
+	}
+
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	devices := []Device{}
+	err = GetEntity(res, &devices)
+	return &devices, err
+
+}
+
+func (c *Client) GetDeviceMetadata(deviceID string) (*Device, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "devices", deviceID}, "/"),
+	}
+
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	device := Device{}
+	err = GetEntity(res, &device)
+	return &device, err
+}
+
+func (c *Client) GetDeviceStatus(deviceID string) (*DeviceStatus, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "devices", deviceID, "status"}, "/"),
+	}
+
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	deviceStatus := DeviceStatus{}
+	err = GetEntity(res, &deviceStatus)
+	return &deviceStatus, err
+
+}
