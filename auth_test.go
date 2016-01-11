@@ -1,10 +1,8 @@
 package aerofs
 
-/*
-// dff3f7cc1ae14b69bb9b49a8888c4de6
 import (
 	"fmt"
-	//	"os/exec"
+	"os/exec"
 	"testing"
 )
 
@@ -31,4 +29,3 @@ func TestBasic(t *testing.T) {
 	token, scopes, err := authClient.GetAccessToken(code)
 	fmt.Println(token, scopes, err)
 }
-*/
