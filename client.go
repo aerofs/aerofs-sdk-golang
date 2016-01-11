@@ -2,126 +2,262 @@ package aerofs
 
 // This is the entrypoint class for making connections with an AeroFS Appliance
 // A received OAuth Token is required for authentication
-
+// TODO :
+//  - reformat the Path construction per each URL object to remove extraneous
+//  code
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
 const (
-	API = "v1.3"
+	API = "api/v1.3"
 )
 
-//
 type Client struct {
-	AppUrl string
-	Prefix string
-	Token  string //Oauth Token
+	// The hostname/IP of the AeroFS Appliance
+	// Used when constructing the default API Prefix for all subsequent API calls
+	// Ie. share.syncfs.com
+	Host string
+
+	// The OAuth token
+	Token string
+
+	// Contains the authorization token
+	// For conditional file, and folder requests, the header is populated
+	// with an ETag
+	Header http.Header
 }
 
-// Wrapper around HTTP Delete
+// SDK-Client Constructor
+// Constructs the HTTP header used for subsequent requests
+// OAuth token stored in HTTP header
+func NewClient(token, host string) (*Client, error) {
+	header := http.Header{}
+	header.Set("Authorization", "Bearer "+token)
+	header.Set("Content-Type", "application/json")
+	header.Set("Endpoint-Consistency", "strict")
 
-// Create a client
-func NewClient(token, appUrl string) (*Client, error) {
-	prefix := "https://" + appUrl + "/api/" + API
-	c := Client{appUrl, prefix, token}
+	c := Client{Host: host,
+		Header: header,
+		Token:  token}
+
 	return &c, nil
 }
 
-// Retrieve array of Appliance users
-func (c *Client) ListUsers(limit int) (*[]User, error) {
-	route := "users"
-	params := "limit=" + string(limit)
-	url := strings.Join([]string{c.Prefix, route, params}, "/")
-	listResponse := ListUserResponse{}
-	users := &listResponse.Users
+// Resets the token for a given client
+// Allows the third-party developer to construct 1 SDK-Client used to retrieve
+// the values for multiple users
+func (c *Client) SetToken(token string) {
+	c.Header.Set("Authorization", "Bearer "+token)
+}
 
-	res, err := http.Get(url)
-	defer res.Body.Close()
-
+// Wrappers for basic HTTP functions
+// DELETE, PUT can only be performed by an httpClient
+func (c *Client) get(url string) (*http.Response, error) {
+	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return users, err
+		return nil, errors.New("Unable to create HTTP GET Request")
 	}
 
-	err = GetEntity(res, &users)
-	return users, err
+	request.Header = c.Header
+	hClient := &http.Client{}
+	return hClient.Do(request)
+}
+
+func (c *Client) post(url string, buffer io.Reader) (*http.Response, error) {
+	request, err := http.NewRequest("POST", url, buffer)
+	if err != nil {
+		return nil, errors.New("Unable to create HTTP POST request")
+	}
+
+	request.Header = c.Header
+	hClient := &http.Client{}
+	return hClient.Do(request)
+}
+
+func (c *Client) del(url string) (*http.Response, error) {
+	request, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return nil, errors.New("Unable to create HTTP DELETE Request")
+	}
+
+	request.Header = c.Header
+	hClient := &http.Client{}
+	return hClient.Do(request)
+}
+
+// USER API Calls
+// The format is to construct a URL, marshal the request
+// and unmarshal the parsed HTTP response
+
+// Retrieve array of Appliance users
+func (c *Client) ListUsers(limit int) (*[]User, error) {
+	query := url.Values{"limit": []string{string(limit)}}
+	link := url.URL{Scheme: "https",
+		Host:     c.Host,
+		Path:     strings.Join([]string{API, "users"}, "/"),
+		RawQuery: query.Encode(),
+	}
+	fmt.Println(link.String())
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	listResponse := ListUserResponse{}
+	err = GetEntity(res, &listResponse)
+	return &listResponse.Users, err
 }
 
 // Retrieve a single user
 func (c *Client) GetUser(email string) (*User, error) {
-	route := "users"
-	params := email
-	url := strings.Join([]string{c.Prefix, route, params}, "/")
-	user := new(User)
+	url := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "users", email}, "/"),
+	}
+	fmt.Println(url)
 
-	res, err := http.Get(url)
+	res, err := c.get(url.String())
 	defer res.Body.Close()
 
 	if err != nil {
-		return user, err
+		return nil, err
 	}
 
+	user := User{}
 	err = GetEntity(res, &user)
-	return user, err
+	return &user, err
 
 }
 
 // TODO : Should Shares, Invitations be ignored?
 func (c *Client) CreateUser(user User) (*User, error) {
-	route := "users"
-	url := strings.Join([]string{c.Prefix, route}, "/")
-	newUser := new(User)
-
-	data, err := json.Marshal(newUser)
-	if err != nil {
-		return newUser, err
+	url := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "users"}, "/"),
 	}
 
-	res, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	data, err := json.Marshal(user)
 	if err != nil {
-		return newUser, err
+		return nil, err
 	}
 
-	err = GetEntity(res, newUser)
-	return newUser, err
+	res, err := c.post(url.String(), bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+
+	newUser := User{}
+	err = GetEntity(res, &newUser)
+	return &newUser, err
 }
 
+// Retrieve information about a person invited to an AeroFS instance
 func (c *Client) GetInvitee(email string) (*Invitee, error) {
-	route := "invitees"
-	params := email
-	url := strings.Join([]string{c.Prefix, route, params}, "/")
-	invitee := new(Invitee)
-
-	res, err := http.Get(url)
-	defer res.Body.Close()
-	if err != nil {
-		return invitee, err
+	url := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "invitees", email}, "/"),
 	}
 
+	res, err := c.get(url.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	invitee := new(Invitee)
 	err = GetEntity(res, invitee)
 	return invitee, err
 }
 
+// Create an invitation
 func (c *Client) CreateInvitee(email_to, email_from string) (*Invitee, error) {
-	route := "invitees"
-	url := strings.Join([]string{c.Prefix, route}, "/")
+	url := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "invitees"}, "/"),
+	}
+
+	newInvitee := new(Invitee)
 	invitee := new(Invitee)
 	invitee.EmailTo = email_to
 	invitee.EmailFrom = email_from
-	newInvitee := new(Invitee)
 
 	data, err := json.Marshal(invitee)
 	if err != nil {
-		return newInvitee, err
+		return newInvitee, errors.New("Unable to serialize invitation request")
 	}
 
-	res, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	res, err := c.post(url.String(), bytes.NewBuffer(data))
 	if err != nil {
 		return newInvitee, err
 	}
 
 	err = GetEntity(res, newInvitee)
 	return newInvitee, err
+}
+
+// Delete an unsatisfied invitation
+func (c *Client) DeleteInvitee(email string) error {
+	url := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "invitees", email}, "/"),
+	}
+
+	res, err := c.del(url.String())
+	defer res.Body.Close()
+	return err
+}
+
+// Retrieve the metadata of a specified folder
+// Path and children are on demand fields
+func (c *Client) GetFolderMetadata(folderId string, fields []string) (Folder, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "folders", folderId}, "/"),
+	}
+
+	if len(fields) > 0 {
+		v := url.Values{"fields": fields}
+		link.RawQuery = v.Encode()
+	}
+
+	folder := Folder{}
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return folder, err
+	}
+
+	// TODO : The unmarshalling interface could be redefined for a folder to
+	// include the ETag. However, there are so few instances of this it might not
+	// be worth it
+	folder.Etag = res.Header.Get("ETag")
+	err = GetEntity(res, &folder)
+	return folder, err
+}
+
+func (c *Client) GetFolderPath(folderId string) (*ParentPath, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "folders", folderId, "path"}, "/"),
+	}
+
+	pp := ParentPath{}
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = GetEntity(res, &pp)
+	return &pp, err
 }

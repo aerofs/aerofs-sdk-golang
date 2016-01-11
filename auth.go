@@ -27,12 +27,12 @@ func (auth *AuthClient) GetAuthCode() string {
 	query := v.Encode()
 	route := "authorize"
 
-	url := fmt.Sprintf("https://%v/%v/?%v", auth.AppUrl, route, query)
+	url := fmt.Sprintf("https://%v/%v?%v", auth.AppUrl, route, query)
 	return url
 }
 
-// Retrieve User Authorization token
-func (auth *AuthClient) GetAccessToken(code string) (string, error) {
+// Retrieve User Authorization token and granted scopes
+func (auth *AuthClient) GetAccessToken(code string) (string, []string, error) {
 	v := url.Values{}
 	v.Set("grant_type", "authorization_code")
 	v.Set("code", code)
@@ -47,10 +47,11 @@ func (auth *AuthClient) GetAccessToken(code string) (string, error) {
 
 	res, err := http.Post(url, "application/x-www-form-urlencoded", body)
 	if err != nil {
-		return "", err
+		return "", []string{}, err
 	}
 
 	accessResponse := Access{}
 	err = GetEntity(res, &accessResponse)
-	return accessResponse.Token, err
+	grantedScopes := strings.Split(accessResponse.Scopes, ",")
+	return accessResponse.Token, grantedScopes, err
 }

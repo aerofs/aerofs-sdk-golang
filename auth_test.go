@@ -1,17 +1,34 @@
 package aerofs
 
+/*
+// dff3f7cc1ae14b69bb9b49a8888c4de6
 import (
 	"fmt"
+	//	"os/exec"
 	"testing"
 )
 
-func TestBasic(t *testing.T) {
-	config := AppConfig{"00d63fe6-5baf-4908-807e-d072885828f4",
-		"25cf762e-023b-47e6-af91-b76506da5725",
-		"http://pulsar", []string{}}
-	url := "share.syncfs.com"
-	authClient := AuthClient{config, url}
-	code := "00fa2d4b3ee94befbb74c3a6b5404d8b"
-	token, err := authClient.GetAccessToken(code)
-	fmt.Println(token, err)
+func TestURL(t *testing.T) {
+	config := AppConfig{"764d972d-5717-4a98-b9de-aa41d13da7a2",
+		"b03927cb-8d07-422b-98a3-a9b6483185e8",
+		"http://blackhole",
+		[]string{"files.read", "files.write", "acl.read", "acl.write",
+			"acl.invitations", "user.read", "user.write"}}
+	authClient := AuthClient{config, "share.syncfs.com"}
+	url := authClient.GetAuthCode()
+	fmt.Println(url)
+	exe := exec.Command("open", url)
+	exe.Run()
 }
+
+func TestBasic(t *testing.T) {
+	config := AppConfig{"764d972d-5717-4a98-b9de-aa41d13da7a2",
+		"b03927cb-8d07-422b-98a3-a9b6483185e8",
+		"http://blackhole",
+		[]string{"files.read", "files.write"}}
+	authClient := AuthClient{config, "share.syncfs.com"}
+	code := "e731374c7999450ca236859a0968b310"
+	token, scopes, err := authClient.GetAccessToken(code)
+	fmt.Println(token, scopes, err)
+}
+*/

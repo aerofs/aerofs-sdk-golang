@@ -2,7 +2,7 @@ package aerofs
 
 import (
 	"encoding/json"
-	"errors"
+	//	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -28,7 +28,34 @@ type Access struct {
 	Token      string `json:"access_token"`
 	TokenType  string `json:"token_type"`
 	ExpireTime int    `json:"expires_in"`
-	Scope      string `json:"scope"`
+	Scopes     string `json:"scope"`
+}
+
+type Folder struct {
+	Id       string     `json:"id"`
+	Name     string     `json:"name"`
+	Parent   string     `json:"parent"`
+	IsShared bool       `json:"is_shared"`
+	Sid      string     `json:"sid"`
+	Path     ParentPath `json:"path"`
+	//	Children Children   `json:"children"`
+	Etag string
+}
+
+type File struct {
+	Id           string     `json:"id"`
+	Name         string     `json:"name"`
+	Parent       string     `json:"parent"`
+	LastModified string     `json:"last_modified"`
+	Size         int        `json:"size"`
+	Mime         string     `json:"mime_type"`
+	Etag         string     `json:"etag"`
+	Path         ParentPath `json:"path"`
+	ContentState string     `json:"content_state"`
+}
+
+type ParentPath struct {
+	Folders []Folder `json:"folders"`
 }
 
 type SharedFolder struct {
@@ -106,9 +133,9 @@ type ListUserResponse struct {
 // Unmarshalls data from an HTTP response given a response struct
 func GetEntity(res *http.Response, entity interface{}) error {
 	data, err := ioutil.ReadAll(res.Body)
+	//	fmt.Println(string(data))
 	if err != nil {
-		return errors.New("Unable to parse HTTP Response")
+		return err
 	}
-
-	return json.Unmarshal(data, entity)
+	return json.Unmarshal(data, &entity)
 }
