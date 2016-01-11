@@ -261,3 +261,108 @@ func (c *Client) GetFolderPath(folderId string) (*ParentPath, error) {
 	err = GetEntity(res, &pp)
 	return &pp, err
 }
+
+// File Related Operations
+func (c *Client) GetFileMetadata(fileId string) (*File, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "files", fileId}, "/"),
+	}
+
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	file := File{}
+	file.Etag = res.Header.Get("ETag")
+	err = GetEntity(res, &file)
+	return &file, err
+}
+
+func (c *Client) GetFilePath(fileId string) (*File, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "files", fileId, "path"}, "/"),
+	}
+
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	file := File{}
+	err = GetEntity(res, &file)
+	return &file, err
+}
+
+// Group related Operations
+
+func (c *Client) ListGroups(offset, results int) ([]Group, error) {
+	query := url.Values{}
+	query.Set("offset", string(offset))
+	query.Set("results", string(results))
+
+	link := url.URL{Scheme: "https",
+		Host:     c.Host,
+		Path:     strings.Join([]string{API, "groups"}, "/"),
+		RawQuery: query.Encode(),
+	}
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	Groups := []Group{}
+	err = GetEntity(res, &Groups)
+	return Groups, err
+}
+
+// Create a new user group given a new groupname
+func (c *Client) CreateGroup(groupName string) (*Group, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "groups"}, "/"),
+	}
+
+	res, err := c.get(link.String())
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	group := new(Group)
+	err = GetEntity(res, group)
+	return group, err
+}
+
+func (c *Client) GetGroup(groupID string) (*Group, error) {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "request", groupID}, "/"),
+	}
+
+	res, err := c.post(link.String(), nil)
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	group := new(Group)
+	err = GetEntity(res, group)
+	return group, err
+}
+
+func (c *Client) DeleteGroup(groupID string) error {
+	link := url.URL{Scheme: "https",
+		Host: c.Host,
+		Path: strings.Join([]string{API, "groups", groupID}, "/"),
+	}
+
+	res, err := c.del(link.String())
+	defer res.Body.Close()
+	return err
+}

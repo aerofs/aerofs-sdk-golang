@@ -32,14 +32,14 @@ type Access struct {
 }
 
 type Folder struct {
-	Id       string     `json:"id"`
-	Name     string     `json:"name"`
-	Parent   string     `json:"parent"`
-	IsShared bool       `json:"is_shared"`
-	Sid      string     `json:"sid"`
-	Path     ParentPath `json:"path"`
-	//	Children Children   `json:"children"`
-	Etag string
+	Id        string     `json:"id"`
+	Name      string     `json:"name"`
+	Parent    string     `json:"parent"`
+	IsShared  bool       `json:"is_shared"`
+	Sid       string     `json:"sid"`
+	Path      ParentPath `json:"path"`
+	ChildList Children   `json:"children"`
+	Etag      string
 }
 
 type File struct {
@@ -56,6 +56,11 @@ type File struct {
 
 type ParentPath struct {
 	Folders []Folder `json:"folders"`
+}
+
+type Children struct {
+	Folders []Folder `json:"folders"`
+	Files   []File   `json:"files"`
 }
 
 type SharedFolder struct {
