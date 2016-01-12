@@ -64,13 +64,13 @@ type Children struct {
 }
 
 type SharedFolder struct {
-	Id         string            `json:"id"`
-	Name       string            `json:"email"`
-	External   bool              `json:"is_external"`
-	Members    []SFMember        `json:"members"`
-	Groups     []SFGroupMember   `json:"groups"`
-	Pending    []SFPendingMember `json:"pending"`
-	Permission string            `json:"caller_effective_permissions"`
+	Id         string            `json:"id,omitempty"`
+	Name       string            `json:"name"`
+	External   bool              `json:"is_external,omitempty"`
+	Members    []SFMember        `json:"members,omitempty"`
+	Groups     []SFGroupMember   `json:"groups,omitempty"`
+	Pending    []SFPendingMember `json:"pending,omitempty"`
+	Permission string            `json:"caller_effective_permissions,omitempty"`
 }
 
 type SFMember struct {

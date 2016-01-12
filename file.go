@@ -11,6 +11,7 @@ import (
 )
 
 // File Related Operations
+// TODO : include on-demand fields
 func (c *Client) GetFileMetadata(fileId string) (*File, error) {
 	link := url.URL{Scheme: "https",
 		Host: c.Host,
