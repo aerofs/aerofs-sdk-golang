@@ -9,62 +9,55 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"net/url"
+	"net/http"
 	"strings"
 )
 
 // Retrieve information about a person invited to an AeroFS instance
-func (c *Client) GetInvitee(email string) (*Invitee, error) {
-	url := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "invitees", email}, "/"),
-	}
+func (c *Client) GetInvitee(email string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"invitees", email}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.get(url.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	invitee := new(Invitee)
-	err = GetEntity(res, invitee)
-	return invitee, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
 // Create an invitation
-func (c *Client) CreateInvitee(email_to, email_from string) (*Invitee, error) {
-	url := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "invitees"}, "/"),
+func (c *Client) CreateInvitee(email_to, email_from string) (*[]byte,
+	*http.Header, error) {
+	route := "invitees"
+	link := c.getURL(route, "")
+	invitee := map[string]string{
+		"email_to":   email_to,
+		"email_from": email_from,
 	}
-
-	newInvitee := new(Invitee)
-	invitee := new(Invitee)
-	invitee.EmailTo = email_to
-	invitee.EmailFrom = email_from
 
 	data, err := json.Marshal(invitee)
 	if err != nil {
-		return newInvitee, errors.New("Unable to serialize invitation request")
+		return nil, nil, errors.New("Unable to serialize invitation request")
 	}
 
-	res, err := c.post(url.String(), bytes.NewBuffer(data))
+	res, err := c.post(link, bytes.NewBuffer(data))
+	defer res.Body.Close()
 	if err != nil {
-		return newInvitee, err
+		return nil, nil, err
 	}
 
-	err = GetEntity(res, newInvitee)
-	return newInvitee, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
 // Delete an unsatisfied invitation
 func (c *Client) DeleteInvitee(email string) error {
-	url := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "invitees", email}, "/"),
-	}
-
-	res, err := c.del(url.String())
+	route := strings.Join([]string{"invitees", email}, "/")
+	link := c.getURL(route, "")
+	res, err := c.del(link)
 	defer res.Body.Close()
 	return err
 }
