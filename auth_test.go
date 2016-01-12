@@ -1,5 +1,6 @@
 package aerofs
 
+/*
 import (
 	"fmt"
 	"os/exec"
@@ -28,4 +29,4 @@ func TestBasic(t *testing.T) {
 	code := "e731374c7999450ca236859a0968b310"
 	token, scopes, err := authClient.GetAccessToken(code)
 	fmt.Println(token, scopes, err)
-}
+}*/

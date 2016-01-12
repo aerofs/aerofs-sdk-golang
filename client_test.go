@@ -15,7 +15,10 @@ func TestB(t *testing.T) {
 	if err != nil {
 		fmt.Println("BAD")
 	}
-	a, e := c.ListUsers(10)
+	//before := 100
+	//after := 10
+	//	a, e := c.ListUsers(1000, &after, &before)
+	a, e := c.ListUsers(1000, nil, nil)
 	if e != nil {
 		fmt.Println(e)
 	}

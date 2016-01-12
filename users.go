@@ -18,8 +18,15 @@ import (
 // and unmarshal the parsed HTTP response
 
 // Retrieve array of Appliance users
-func (c *Client) ListUsers(limit int) (*[]User, error) {
+func (c *Client) ListUsers(limit int, after, before *int) (*[]User, error) {
 	query := url.Values{"limit": []string{string(limit)}}
+	if before != nil {
+		query.Add("before", string(*before))
+	}
+	if after != nil {
+		query.Add("after", string(*after))
+	}
+
 	link := url.URL{Scheme: "https",
 		Host:     c.Host,
 		Path:     strings.Join([]string{API, "users"}, "/"),

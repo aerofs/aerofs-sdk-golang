@@ -87,12 +87,12 @@ type SFGroupMember struct {
 }
 
 type SFPendingMember struct {
-	Email       string `json:"email"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Inviter     string `json:"invited_by"`
-	Permissions string `json:"permissions"`
-	Note        string `json:"note"`
+	Email       string   `json:"email"`
+	FirstName   string   `json:"first_name,omitempty"`
+	LastName    string   `json:"last_name,omitempty"`
+	Inviter     string   `json:"invited_by,omitempty"`
+	Permissions []string `json:"permissions"`
+	Note        string   `json:"note"`
 }
 
 type Group struct {
