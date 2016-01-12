@@ -11,6 +11,7 @@ package aerofs
 import (
 	"errors"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -29,7 +30,7 @@ type Client struct {
 	// The OAuth token
 	Token string
 
-	// Contains the authorization token
+	// Default header containing Token, Content-type and Endpoint-Consistency
 	// For conditional file, and folder requests, the header is populated
 	// with an ETag
 	Header http.Header
@@ -49,6 +50,13 @@ func NewClient(token, host string) (*Client, error) {
 		Token:  token}
 
 	return &c, nil
+}
+
+// For a given HTTP-Response, this returns the associated body,header
+func unpackageResponse(res *http.Response) (*[]byte, *http.Header) {
+	body, _ := ioutil.ReadAll(res.Body)
+	header := res.Header
+	return &body, &header
 }
 
 // Construct a URL given a route and query parameters

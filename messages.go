@@ -9,19 +9,16 @@ import (
 
 // Structures used when communicating with an AeroFS Appliance
 
-type AppConfig struct {
-	Id       string
-	Secret   string
-	Redirect string
-	Scopes   []string
-}
+type AuthConfig struct {
+	// Unique AeroFS Application ID, Secret
+	Id     string
+	Secret string
 
-type NewName struct {
-	Grant       string
-	Authcode    string
-	ID          string
-	Secret      string
-	RedirectURL string
+	// Redirect URL when retrieving a user authorization code
+	Redirect string
+
+	// The requested scopes for a user, implicit in their generated OAuth token
+	Scopes []string
 }
 
 type Access struct {

@@ -8,21 +8,20 @@ package aerofs
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"errors"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 )
 
-// USER API Calls
-// The format is to construct a URL, marshal the request
-// and unmarshal the parsed HTTP response
-
 // Retrieve array of Appliance users
 // limit : The maximum number of entries returned
 // after : An index to the first entry to be retrieved
 // before: An index to the last possible entry to be retrieved
-func (c *Client) ListUsers(limit int, after, before *int) (*[]User, error) {
+func (c *Client) ListUsers(limit int, after, before *int) (*[]byte, *http.Header,
+	error) {
+	route := "users"
 	query := url.Values{}
 	query.Set("limit", strconv.Itoa(limit))
 	if before != nil {
@@ -31,59 +30,115 @@ func (c *Client) ListUsers(limit int, after, before *int) (*[]User, error) {
 	if after != nil {
 		query.Set("after", strconv.Itoa(*after))
 	}
-
-	route := "users"
 	link := c.getURL(route, query.Encode())
+
 	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	listResponse := ListUserResponse{}
-	err = GetEntity(res, &listResponse)
-	return &listResponse.Users, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
 // Retrieve a single user
-func (c *Client) GetUser(email string) (*User, error) {
-	url := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "users", email}, "/"),
-	}
-	fmt.Println(url)
+func (c *Client) GetUser(email string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"users", email}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.get(url.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
-
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	user := User{}
-	err = GetEntity(res, &user)
-	return &user, err
-
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-// TODO : Should Shares, Invitations be ignored?
-func (c *Client) CreateUser(user User) (*User, error) {
-	url := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "users"}, "/"),
+// Create a user with given email and name
+func (c *Client) CreateUser(email, firstName, lastName string) (*[]byte,
+	*http.Header, error) {
+	route := "users"
+	link := c.getURL(route, "")
+
+	user := map[string]string{
+		"email":      email,
+		"first_name": firstName,
+		"last_name":  lastName,
+	}
+	data, err := json.Marshal(user)
+	if err != nil {
+		return nil, nil, errors.New("Unable to marshal User data")
+	}
+
+	res, err := c.post(link, bytes.NewBuffer(data))
+	body, header := unpackageResponse(res)
+	return body, header, err
+}
+
+func (c *Client) UpdateUser(email, firstName, lastName string) (*[]byte,
+	*http.Header, error) {
+	route := strings.Join([]string{"users", email}, "/")
+	link := c.getURL(route, "")
+
+	user := map[string]string{}
+	user["email"] = email
+	if firstName != "" {
+		user["first_name"] = firstName
+	}
+	if lastName != "" {
+		user["last_name"] = lastName
 	}
 
 	data, err := json.Marshal(user)
 	if err != nil {
-		return nil, err
+		return nil, nil, errors.New("Unable to marshal User data")
 	}
 
-	res, err := c.post(url.String(), bytes.NewBuffer(data))
-	if err != nil {
-		return nil, err
-	}
+	res, err := c.post(link, bytes.NewBuffer(data))
+	body, header := unpackageResponse(res)
+	return body, header, err
+}
 
-	newUser := User{}
-	err = GetEntity(res, &newUser)
-	return &newUser, err
+func (c *Client) DeleteUser(email string) error {
+	route := strings.Join([]string{"users", email}, "/")
+	link := c.getURL(route, "")
+
+	_, err := c.del(link)
+	return err
+}
+
+func (c *Client) ChangePassword(email, password string) error {
+	route := strings.Join([]string{"users", email, "password"}, "/")
+	link := c.getURL(route, "")
+	data := []byte(`"` + password + `"`)
+
+	_, err := c.put(link, bytes.NewBuffer(data))
+	return err
+}
+
+func (c *Client) DisablePassword(email string) error {
+	route := strings.Join([]string{"users", email, "password"}, "/")
+	link := c.getURL(route, "")
+
+	_, err := c.del(link)
+	return err
+}
+
+func (c *Client) CheckTwoFactorAuth(email string) error {
+	route := strings.Join([]string{"users", email, "two_factor"}, "/")
+	link := c.getURL(route, "")
+
+	_, err := c.get(link)
+	return err
+}
+
+func (c *Client) DisableTwoFactorAuth(email string) error {
+	route := strings.Join([]string{"users", email, "two_factor"}, "/")
+	link := c.getURL(route, "")
+
+	_, err := c.del(link)
+	return err
 }

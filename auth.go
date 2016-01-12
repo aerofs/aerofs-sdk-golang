@@ -12,7 +12,10 @@ import (
 )
 
 type AuthClient struct {
-	Config AppConfig
+	// Parameters required for network requests
+	Config AuthConfig
+
+	// The URL of an AeroFS Appliance instance
 	AppUrl string
 }
 
@@ -31,21 +34,25 @@ func (auth *AuthClient) GetAuthCode() string {
 	return url
 }
 
-// Retrieve User Authorization token and granted scopes
+// Retrieve User OAuth token, scopes given an Authorization code
 func (auth *AuthClient) GetAccessToken(code string) (string, []string, error) {
+	// Regular API requests are 'application/json' but authorization uses
+	// Urlencoding
 	v := url.Values{}
 	v.Set("grant_type", "authorization_code")
 	v.Set("code", code)
 	v.Set("client_id", auth.Config.Id)
 	v.Set("client_secret", auth.Config.Secret)
 	v.Set("redirect_uri", auth.Config.Redirect)
-	data := v.Encode()
-	body := bytes.NewBuffer([]byte(data))
 
-	route := "auth/token"
-	url := fmt.Sprintf("https://%v/%v", auth.AppUrl, route)
+	link := url.URL{Scheme: "https",
+		Host: auth.AppUrl,
+		Path: strings.Join([]string{"auth", "token"}, "/"),
+	}
+	body := bytes.NewBuffer([]byte(v.Encode()))
+	encoding := "application/x-www-form-urlencoded"
 
-	res, err := http.Post(url, "application/x-www-form-urlencoded", body)
+	res, err := http.Post(link.String(), encoding, body)
 	if err != nil {
 		return "", []string{}, err
 	}
