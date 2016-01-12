@@ -136,6 +136,10 @@ type Device struct {
 	InstallDate string `json:"install_data"`
 }
 
+type PermissionList struct {
+	Permissions []string `json:"permissions"`
+}
+
 type DeviceStatus struct {
 	Online   bool   `json:"online"`
 	LastSeen string `json:"last_seen"`
