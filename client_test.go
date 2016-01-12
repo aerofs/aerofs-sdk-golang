@@ -11,15 +11,13 @@ func TestB(t *testing.T) {
 	userToken := "2a09580d057348d9a1382b866389b1ae"
 	adminToken := "3d2a1005a27a4115946fe308eb30785f"
 	c, err := NewClient(adminToken, "share.syncfs.com")
-
 	if err != nil {
 		fmt.Println("BAD")
 	}
-	//before := 100
-	//after := 10
-	//	a, e := c.ListUsers(1000, &after, &before)
-	a, e := c.ListUsers(1000, nil, nil)
+
+	a, e := c.ListUsers(100, nil, nil)
 	if e != nil {
+		fmt.Println("Error retrieving list of users")
 		fmt.Println(e)
 	}
 	fmt.Println("GetUsers")

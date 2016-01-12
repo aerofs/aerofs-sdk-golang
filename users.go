@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -18,23 +19,22 @@ import (
 // and unmarshal the parsed HTTP response
 
 // Retrieve array of Appliance users
+// limit : The maximum number of entries returned
+// after : An index to the first entry to be retrieved
+// before: An index to the last possible entry to be retrieved
 func (c *Client) ListUsers(limit int, after, before *int) (*[]User, error) {
-	query := url.Values{"limit": []string{string(limit)}}
+	query := url.Values{}
+	query.Set("limit", strconv.Itoa(limit))
 	if before != nil {
-		query.Add("before", string(*before))
+		query.Set("before", strconv.Itoa(*before))
 	}
 	if after != nil {
-		query.Add("after", string(*after))
+		query.Set("after", strconv.Itoa(*after))
 	}
 
-	link := url.URL{Scheme: "https",
-		Host:     c.Host,
-		Path:     strings.Join([]string{API, "users"}, "/"),
-		RawQuery: query.Encode(),
-	}
-
-	fmt.Println(link.String())
-	res, err := c.get(link.String())
+	route := "users"
+	link := c.getURL(route, query.Encode())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
 		return nil, err

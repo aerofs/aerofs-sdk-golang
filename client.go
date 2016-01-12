@@ -5,11 +5,15 @@ package aerofs
 // TODO :
 //  - reformat the Path construction per each URL object to remove extraneous
 //  code
+//  - Refactor into a rest API and then SDK
+//    - for the API, simple return a buffer of the body, the Header map and an
+//      error
 import (
 	"errors"
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 const (
@@ -48,9 +52,9 @@ func NewClient(token, host string) (*Client, error) {
 }
 
 // Construct a URL given a route and query parameters
-func (c *Client) getURL(path, query string) string {
+func (c *Client) getURL(route, query string) string {
 	link := url.URL{Scheme: "https",
-		Path: path,
+		Path: strings.Join([]string{API, route}, "/"),
 		Host: c.Host,
 	}
 
@@ -71,6 +75,8 @@ func (c *Client) SetToken(token string) {
 // Wrappers for basic HTTP functions
 // Use HTTPClient since the stdlib does not provide function prototypes for all
 // request types
+
+// HTTP-GET
 func (c *Client) get(url string) (*http.Response, error) {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -106,7 +112,7 @@ func (c *Client) put(url string, buffer io.Reader) (*http.Response, error) {
 	return hClient.Do(request)
 }
 
-// HTTP-Delete
+// HTTP-DELETE
 func (c *Client) del(url string) (*http.Response, error) {
 	request, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
