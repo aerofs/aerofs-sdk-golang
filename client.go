@@ -47,9 +47,7 @@ func NewClient(token, host string) (*Client, error) {
 	return &c, nil
 }
 
-// Construct a URL given well-defined parameters
-// The Scheme should be constant but the client is able to reset the Host and
-// Token
+// Construct a URL given a route and query parameters
 func (c *Client) getURL(path, query string) string {
 	link := url.URL{Scheme: "https",
 		Path: path,
