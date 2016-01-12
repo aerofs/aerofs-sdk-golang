@@ -32,6 +32,7 @@ func (c *Client) ListUsers(limit int, after, before *int) (*[]User, error) {
 		Path:     strings.Join([]string{API, "users"}, "/"),
 		RawQuery: query.Encode(),
 	}
+
 	fmt.Println(link.String())
 	res, err := c.get(link.String())
 	defer res.Body.Close()

@@ -82,6 +82,7 @@ func (c *Client) get(url string) (*http.Response, error) {
 	return hClient.Do(request)
 }
 
+// HTTP-POST
 func (c *Client) post(url string, buffer io.Reader) (*http.Response, error) {
 	request, err := http.NewRequest("POST", url, buffer)
 	if err != nil {
@@ -93,6 +94,7 @@ func (c *Client) post(url string, buffer io.Reader) (*http.Response, error) {
 	return hClient.Do(request)
 }
 
+// HTTP-PUT
 func (c *Client) put(url string, buffer io.Reader) (*http.Response, error) {
 	request, err := http.NewRequest("PUT", url, buffer)
 	if err != nil {
@@ -103,6 +105,8 @@ func (c *Client) put(url string, buffer io.Reader) (*http.Response, error) {
 	hClient := &http.Client{}
 	return hClient.Do(request)
 }
+
+// HTTP-Delete
 func (c *Client) del(url string) (*http.Response, error) {
 	request, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {

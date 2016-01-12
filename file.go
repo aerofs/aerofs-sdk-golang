@@ -2,10 +2,10 @@ package aerofs
 
 // This is the entrypoint class for making connections with an AeroFS Appliance
 // A received OAuth Token is required for authentication
-// TODO :
-//  - reformat the Path construction per each URL object to remove extraneous
-//  code
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"net/url"
 	"strings"
 )
@@ -45,4 +45,41 @@ func (c *Client) GetFilePath(fileId string) (*File, error) {
 	file := File{}
 	err = GetEntity(res, &file)
 	return &file, err
+}
+
+/*
+func (c *Client) GetFileContent(fileid string) (*File, error) {
+	route := strings.Join([]string{"files", fileid, "content"}, "/")
+}
+*/
+
+// Instantiate a newfile
+func (c *Client) CreateFile(file File) (*File, error) {
+	route := "files"
+	link := c.getURL(route, "")
+
+	data, err := json.Marshal(file)
+	if err != nil {
+		return nil, errors.New("Unable to marshal the given file")
+	}
+
+	res, err := c.post(link, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, err
+	}
+
+	newFile := File{}
+	err = GetEntity(res, &newFile)
+	newFile.Etag = res.Header.Get("ETag")
+
+	return &newFile, err
+}
+
+func (c *Client) DeleteFile(fileid string, etags []string) error {
+	route := strings.Join([]string{"files", fileid}, "/")
+	link := c.getURL(route, "")
+
+	res, err := c.del(link)
+	defer res.Body.Close()
+	return err
 }
