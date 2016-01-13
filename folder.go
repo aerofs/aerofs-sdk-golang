@@ -6,52 +6,120 @@ package aerofs
 //  - reformat the Path construction per each URL object to remove extraneous
 //  code
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+	"net/http"
 	"net/url"
 	"strings"
 )
 
 // Retrieve the metadata of a specified folder
 // Path and children are on demand fields
-func (c *Client) GetFolderMetadata(folderId string, fields []string) (Folder, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "folders", folderId}, "/"),
-	}
-
+func (c *Client) GetFolderMetadata(folderId string, fields []string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"folders", folderId}, "/")
+	query := ""
 	if len(fields) > 0 {
 		v := url.Values{"fields": fields}
-		link.RawQuery = v.Encode()
+		query = v.Encode()
 	}
+	link := c.getURL(route, query)
 
-	folder := Folder{}
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return folder, err
+		return nil, nil, err
 	}
 
-	// TODO : The unmarshalling interface could be redefined for a folder to
-	// include the ETag. However, there are so few instances of this it might not
-	// be worth it
-	folder.Etag = res.Header.Get("ETag")
-	err = GetEntity(res, &folder)
-	return folder, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) GetFolderPath(folderId string) (*ParentPath, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "folders", folderId, "path"}, "/"),
-	}
-
-	pp := ParentPath{}
-	res, err := c.get(link.String())
+func (c *Client) GetFolderPath(folderId string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"folders", folderId, "path"}, "/")
+	link := c.getURL(route, "")
+	res, err := c.get(link)
 	defer res.Body.Close()
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	err = GetEntity(res, &pp)
-	return &pp, err
+	body, header := unpackageResponse(res)
+	return body, header, err
+}
+
+func (c *Client) ListFolderChildren(folderId string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"folders", folderId, "children"}, "/")
+	link := c.getURL(route, "")
+
+	res, err := c.get(link)
+	defer res.Body.Close()
+	body, header := unpackageResponse(res)
+	return body, header, err
+
+}
+
+func (c *Client) CreateFolder(parentId, name string) (*[]byte, *http.Header, error) {
+	route := "folders"
+	link := c.getURL(route, "")
+
+	newFolder := map[string]string{
+		"parent": parentId,
+		"name":   name,
+	}
+	data, err := json.Marshal(newFolder)
+	if err != nil {
+		return nil, nil, errors.New("Unable to marshal JSON for new folder")
+	}
+
+	res, err := c.post(link, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	body, header := unpackageResponse(res)
+	return body, header, err
+}
+
+// Move a folder given its existing unique ID, the ID of its new parent and its
+// new folder Name
+func (c *Client) MoveFolder(folderId, newParentId, name string) (*[]byte,
+	*http.Header, error) {
+	route := strings.Join([]string{"folders", folderId}, "/")
+	link := c.getURL(route, "")
+
+	content := map[string]string{"parent": newParentId, "name": name}
+	data, err := json.Marshal(content)
+	if err != nil {
+		return nil, nil, errors.New("Unable to marshal JSON for moving folder")
+	}
+
+	res, err := c.put(link, bytes.NewBuffer(data))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	body, header := unpackageResponse(res)
+	return body, header, err
+
+}
+
+func (c *Client) DeleteFolder(folderId string, etags []string) error {
+	route := strings.Join([]string{"folders", folderId}, "/")
+	newHeader := http.Header{"If-Match": etags}
+	link := c.getURL(route, "")
+
+	res, err := c.request("DELETE", link, &newHeader)
+	res.Body.Close()
+	return err
+}
+
+func (c *Client) ShareFolder(folderId string) error {
+	route := strings.Join([]string{"folders", folderId, "is_shared"}, "/")
+	link := c.getURL(route, "")
+
+	res, err := c.put(link, nil)
+	res.Body.Close()
+	return err
 }

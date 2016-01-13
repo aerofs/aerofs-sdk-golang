@@ -62,23 +62,33 @@ func TestB(t *testing.T) {
 	fmt.Println(e)
 
 	c.SetToken(adminToken)
+	c.SetToken(userToken)
+
+	// Get root folder data
+	b, h, err = c.GetFolderMetadata("root", []string{"children"})
+	fmt.Println("GetRootFolder")
+	fmt.Println(e)
+	fmt.Println(h)
+	fmt.Println(string(*b))
+
+	// Get root folder data
+	b, h, err = c.ListFolderChildren("root")
+	fmt.Println("GetRootFolderChildren")
+	fmt.Println(err)
+	fmt.Println(h)
+	fmt.Println(string(*b))
+
+	// Create a folder with root as parent
+	b, h, err = c.CreateFolder("root", "Moria")
+	fmt.Println("CreateFolder")
+	fmt.Println(err)
+	fmt.Println(h)
+	fmt.Println(string(*b))
+
 	/*
-		  // Create an invitaiton
-				invite, e := c.CreateInvitee("danielpcardoza@gmail.com",
-					"daniel.cardoza@aerofs.com")
-				fmt.Println(e)
-				fmt.Println(invite)
-
-				c.SetToken(userToken)
-				// Get root folder data
-				f, err := c.GetFolderMetadata("root", []string{"children"})
-				fmt.Println("GetRootFolder")
-				fmt.Println(err)
-				fmt.Println(f)
-
-				pp, err := c.GetFolderPath("root")
-				fmt.Println("GetFolderPath")
-				fmt.Println(err)
-				fmt.Println(pp)
+		pp, err := c.GetFolderPath("root")
+		fmt.Println("GetFolderPath")
+		fmt.Println(err)
+		fmt.Println(pp)
 	*/
 }

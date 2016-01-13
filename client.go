@@ -131,3 +131,26 @@ func (c *Client) del(url string) (*http.Response, error) {
 	hClient := &http.Client{}
 	return hClient.Do(request)
 }
+
+// Generic Handler for HTTP request
+// Allows the passing of additional HTTP request header K/V pairs
+func (c *Client) request(req, url string, options *http.Header) (*http.Response, error) {
+	request, err := http.NewRequest(req, url, nil)
+	if err != nil {
+		return nil, errors.New("Unable to create HTTP " + req + " Request")
+	}
+
+	// If header map passed in , add additional KV pairs
+	request.Header = c.Header
+	if options != nil {
+		for k, v := range *options {
+			for _, el := range v {
+				request.Header.Add(k, el)
+			}
+		}
+	}
+
+	hClient := &http.Client{}
+	return hClient.Do(request)
+
+}
