@@ -6,73 +6,72 @@ package aerofs
 //  - reformat the Path construction per each URL object to remove extraneous
 //  code
 import (
+	"bytes"
+	"fmt"
+	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
-func (c *Client) ListGroups(offset, results int) ([]Group, error) {
+// TODO : offset and results should be optional ( via pointers??)
+func (c *Client) ListGroups(offset, results int) (*[]byte, *http.Header, error) {
+	route := "groups"
 	query := url.Values{}
-	query.Set("offset", string(offset))
-	query.Set("results", string(results))
+	query.Set("offset", strconv.Itoa(offset))
+	query.Set("results", strconv.Itoa(results))
+	link := c.getURL(route, query.Encode())
 
-	link := url.URL{Scheme: "https",
-		Host:     c.Host,
-		Path:     strings.Join([]string{API, "groups"}, "/"),
-		RawQuery: query.Encode(),
-	}
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	Groups := []Group{}
-	err = GetEntity(res, &Groups)
-	return Groups, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
 // Create a new user group given a new groupname
-func (c *Client) CreateGroup(groupName string) (*Group, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "groups"}, "/"),
-	}
+func (c *Client) CreateGroup(groupName string) (*[]byte, *http.Header, error) {
+	route := "groups"
+	link := c.getURL(route, "")
+	// TODO : Is this preferred to constructing a map, then marshalling?
+	// robust vs. bootstrap
+	newGroup := []byte(fmt.Sprintf(`{"name" : %s}`, groupName))
 
-	res, err := c.get(link.String())
+	res, err := c.post(link, bytes.NewBuffer(newGroup))
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	group := new(Group)
-	err = GetEntity(res, group)
-	return group, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) GetGroup(groupID string) (*Group, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "request", groupID}, "/"),
-	}
+// Retrieve a group given a group identifier
+func (c *Client) GetGroup(groupId string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"request", groupId}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.post(link.String(), nil)
+	res, err := c.post(link, nil)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	group := new(Group)
-	err = GetEntity(res, group)
-	return group, err
+	body, header := unpackageResponse(res)
+	return body, header, err
+
 }
 
-func (c *Client) DeleteGroup(groupID string) error {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "groups", groupID}, "/"),
-	}
+// Remove an existing group
+func (c *Client) DeleteGroup(groupId string) error {
+	route := strings.Join([]string{API, "groups", groupId}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.del(link.String())
+	res, err := c.del(link)
 	defer res.Body.Close()
 	return err
 }
