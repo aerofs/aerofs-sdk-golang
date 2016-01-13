@@ -43,6 +43,32 @@ func (c *Client) GetFilePath(fileId string) (*[]byte, *http.Header, error) {
 	return body, header, err
 }
 
+func (c *Client) GetFileContent(fileId, etag_IfRange string, fileRanges, etags []string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	link := c.getURL(route, "")
+
+	newHeader := http.Header{}
+	if len(fileRanges) > 0 {
+		for _, v := range fileRanges {
+			newHeader.Add("Range", v)
+		}
+	}
+
+	if etag_IfRange != "" {
+		newHeader.Set("If-Range", etag_IfRange)
+	}
+
+	if len(etags) > 0 {
+		for _, v := range fileRanges {
+			newHeader.Add("If-None-Match", v)
+		}
+	}
+
+	res, err := c.request("GET", link, &newHeader, nil)
+	body, header, err := unpackageResponse(res)
+	return body, header, err
+}
+
 // Instantiate a newfile
 func (c *Client) CreateFile(file File) (*File, error) {
 	route := "files"
@@ -63,6 +89,25 @@ func (c *Client) CreateFile(file File) (*File, error) {
 	newFile.Etag = res.Header.Get("ETag")
 
 	return &newFile, err
+}
+
+func (c *Client) MoveFile(fileId, parentId, name string, etags []string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"files", fileId}, "/")
+	link := c.getURL(route, "")
+	newHeader := http.Header{"If-Match": etags}
+	newFile := map[string]interface{}{
+		"parent": parentId,
+		"name":   name,
+	}
+
+	data, err := json.Marshal(newFile)
+	if err != nil {
+		return nil, nil, errors.New("Unable to marshal the given file")
+	}
+
+	res, err := c.request("PUT", link, &newHeader, bytes.NewBuffer(data))
+	body, header, err := unpackageResponse(res)
+	return body, header, err
 }
 
 func (c *Client) DeleteFile(fileid string, etags []string) error {
