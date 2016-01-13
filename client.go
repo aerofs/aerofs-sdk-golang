@@ -10,6 +10,7 @@ package aerofs
 //      error
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -56,6 +57,10 @@ func NewClient(token, host string) (*Client, error) {
 func unpackageResponse(res *http.Response) (*[]byte, *http.Header) {
 	body, _ := ioutil.ReadAll(res.Body)
 	header := res.Header
+	if res.StatusCode >= 300 {
+		err := errors.New(res.Status)
+		fmt.Println(err)
+	}
 	return &body, &header
 }
 
