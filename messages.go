@@ -2,7 +2,6 @@ package aerofs
 
 import (
 	"encoding/json"
-	//	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -68,14 +67,14 @@ type SharedFolder struct {
 	Members    []SFMember        `json:"members,omitempty"`
 	Groups     []SFGroupMember   `json:"groups,omitempty"`
 	Pending    []SFPendingMember `json:"pending,omitempty"`
-	Permission string            `json:"caller_effective_permissions,omitempty"`
+	Permission []string          `json:"caller_effective_permissions,omitempty"`
 }
 
 type SFMember struct {
-	Email       string `json:"email"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Permissions string `json:"permissions"`
+	Email       string   `json:"email"`
+	FirstName   string   `json:"first_name"`
+	LastName    string   `json:"last_name"`
+	Permissions []string `json:"permissions"`
 }
 
 type SFGroupMember struct {

@@ -3,8 +3,12 @@ package aerofs
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
+// The User object is used to easily modify backend users assuming
+// the object has a reference to a given APIClient. Methods are able to modify
+// internal user state as well as backend state such as user password
 type User struct {
 	APIClient   *Client        `json:"-"`
 	Email       string         `json:"email"`
@@ -15,7 +19,7 @@ type User struct {
 }
 
 // Return an existing user
-func newUser(client *Client, email string) (*User, error) {
+func GetUser(client *Client, email string) (*User, error) {
 	body, _, err := client.GetUser(email)
 	if err != nil {
 		return nil, err
@@ -24,6 +28,7 @@ func newUser(client *Client, email string) (*User, error) {
 	u := User{APIClient: client}
 	err = json.Unmarshal(*body, &u)
 	if err != nil {
+		fmt.Println(err)
 		return nil, errors.New("Unable to unmarshal new User")
 	}
 
@@ -31,7 +36,7 @@ func newUser(client *Client, email string) (*User, error) {
 }
 
 // Create a new user and return
-func createUser(client *Client, email, firstName, lastName string) (*User, error) {
+func CreateUser(client *Client, email, firstName, lastName string) (*User, error) {
 	// CreateUser returns a Location of the new resource
 	body, _, err := client.CreateUser(email, firstName, lastName)
 	if err != nil {
@@ -64,10 +69,14 @@ func (u *User) update(newFirstName, newLastName string) error {
 	return nil
 }
 
+// Change the user's password
 func (u *User) changePassword(password string) error {
 	err := u.APIClient.ChangePassword(u.Email, password)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
+}
+
+// Disable two-factor authentication
+func (u *User) DisableTwoFactorAuth() error {
+	err := u.APIClient.DisableTwoFactorAuth(u.Email)
+	return err
 }
