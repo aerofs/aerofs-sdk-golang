@@ -9,6 +9,7 @@ import (
 
 // Structures used when communicating with an AeroFS Appliance
 
+// Contains the necessary information for retrieving an access Token
 type AuthConfig struct {
 	// Unique AeroFS Application ID, Secret
 	Id     string
@@ -102,14 +103,6 @@ type GroupMember struct {
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-}
-
-type User struct {
-	Email       string         `json:"email"`
-	FirstName   string         `json:"first_name"`
-	LastName    string         `json:"last_name"`
-	Shares      []SharedFolder `json:"shares"`
-	Invitations []Invitation   `json:"invitations"`
 }
 
 type Invitee struct {

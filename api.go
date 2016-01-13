@@ -79,8 +79,9 @@ func (c *Client) UpdateUser(email, firstName, lastName string) (*[]byte,
 	route := strings.Join([]string{"users", email}, "/")
 	link := c.getURL(route, "")
 
-	user := map[string]string{}
-	user["email"] = email
+	user := map[string]string{
+		"email": email,
+	}
 	if firstName != "" {
 		user["first_name"] = firstName
 	}
