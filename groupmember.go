@@ -9,73 +9,64 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"net/url"
+	"net/http"
 	"strings"
 )
 
 // GroupMember Functions
-func (c *Client) ListGroupMembers(groupID string) (*[]GroupMember, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "groups", groupID, "members"}, "/"),
-	}
+func (c *Client) ListGroupMembers(groupId string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"groups", groupId, "members"}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	groupMembers := []GroupMember{}
-	err = GetEntity(res, &groupMembers)
-	return &groupMembers, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) AddGroupMember(groupID string, groupMember GroupMember) (*GroupMember, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "groups", groupID, "members"}, "/"),
+func (c *Client) AddGroupMember(groupId, name string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"groups", groupId, "members"}, "/")
+	link := c.getURL(route, "")
+	newMember := map[string]string{
+		"name": name,
 	}
-
-	data, err := json.Marshal(groupMember)
+	data, err := json.Marshal(newMember)
 	if err != nil {
-		return nil, errors.New("Unable to marshal provided group member")
+		return nil, nil, errors.New("Unable to marshal provided group member")
 	}
 
-	res, err := c.post(link.String(), bytes.NewBuffer(data))
+	res, err := c.post(link, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	newMember := GroupMember{}
-	err = GetEntity(res, &newMember)
-	return &newMember, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) GetGroupMember(groupID, email string) (*GroupMember, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "groups", groupID, "members", email}, "/"),
-	}
+func (c *Client) GetGroupMember(groupId, email string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"groups", groupId, "members", email}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	groupMember := GroupMember{}
-	err = GetEntity(res, &groupMember)
-	return &groupMember, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) RemoveMember(groupID, email string) error {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "groups", groupID, "members", email}, "/"),
-	}
+func (c *Client) RemoveMember(groupId, email string) error {
+	route := strings.Join([]string{"groups", groupId, "members", email}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.del(link.String())
+	res, err := c.del(link)
 	defer res.Body.Close()
 	return err
 }
