@@ -28,7 +28,7 @@ func (c *Client) ListGroups(offset, results int) (*[]byte, *http.Header, error) 
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -46,7 +46,7 @@ func (c *Client) CreateGroup(groupName string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -61,7 +61,7 @@ func (c *Client) GetGroup(groupId string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 
 }

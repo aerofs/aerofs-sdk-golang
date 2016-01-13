@@ -38,7 +38,7 @@ func (c *Client) ListUsers(limit int, after, before *int) (*[]byte, *http.Header
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -53,7 +53,7 @@ func (c *Client) GetUser(email string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -74,7 +74,7 @@ func (c *Client) CreateUser(email, firstName, lastName string) (*[]byte,
 	}
 
 	res, err := c.post(link, bytes.NewBuffer(data))
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -98,7 +98,7 @@ func (c *Client) UpdateUser(email, firstName, lastName string) (*[]byte,
 	}
 
 	res, err := c.post(link, bytes.NewBuffer(data))
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 

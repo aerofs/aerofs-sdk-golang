@@ -24,7 +24,7 @@ func (c *Client) ListDevices(email string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -38,7 +38,7 @@ func (c *Client) GetDeviceMetadata(deviceId string) (*[]byte, *http.Header, erro
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -60,6 +60,6 @@ func (c *Client) UpdateDeviceMetadata(deviceName string) (*[]byte, *http.Header,
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }

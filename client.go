@@ -10,7 +10,6 @@ package aerofs
 //      error
 import (
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -54,14 +53,17 @@ func NewClient(token, host string) (*Client, error) {
 }
 
 // For a given HTTP-Response, this returns the associated body,header
-func unpackageResponse(res *http.Response) (*[]byte, *http.Header) {
+func unpackageResponse(res *http.Response) (*[]byte, *http.Header, error) {
 	body, _ := ioutil.ReadAll(res.Body)
 	header := res.Header
+
+	// For each API call, unpackage the HTTP response and return an error if a non
+	// 2XX status code is retrieved
 	if res.StatusCode >= 300 {
 		err := errors.New(res.Status)
-		fmt.Println(err)
+		return &body, &header, err
 	}
-	return &body, &header
+	return &body, &header, nil
 }
 
 // Construct a URL given a route and query parameters

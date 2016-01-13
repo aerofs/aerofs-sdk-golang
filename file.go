@@ -25,7 +25,7 @@ func (c *Client) GetFileMetadata(fileId string, fields []string) (*[]byte,
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -39,7 +39,7 @@ func (c *Client) GetFilePath(fileId string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 

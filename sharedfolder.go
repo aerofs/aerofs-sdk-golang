@@ -18,7 +18,7 @@ func (c *Client) ListSharedFolders(email string, etags []string) (*[]byte, *http
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -32,7 +32,7 @@ func (c *Client) ListSharedFolderMetadata(sid string, etags []string) (*[]byte, 
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -47,6 +47,6 @@ func (c *Client) CreateSharedFolder(name string) (*[]byte, *http.Header, error) 
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }

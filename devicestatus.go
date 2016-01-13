@@ -14,6 +14,6 @@ func (c *Client) GetDeviceStatus(deviceId string) (*[]byte, *http.Header,
 	if err != nil {
 		return nil, nil, err
 	}
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }

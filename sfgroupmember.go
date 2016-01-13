@@ -19,7 +19,7 @@ func (c *Client) ListSFGroups(sid string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -36,7 +36,7 @@ func (c *Client) GetSFGroups(sid, gid string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -57,7 +57,7 @@ func (c *Client) AddGroupToSharedFolder(sid string, permissions []string) (*[]by
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 

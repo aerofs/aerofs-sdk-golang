@@ -24,7 +24,7 @@ func (c *Client) GetInvitee(email string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -49,7 +49,7 @@ func (c *Client) CreateInvitee(email_to, email_from string) (*[]byte,
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 

@@ -31,7 +31,7 @@ func (c *Client) GetFolderMetadata(folderId string, fields []string) (*[]byte, *
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -45,7 +45,7 @@ func (c *Client) GetFolderPath(folderId string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -55,9 +55,8 @@ func (c *Client) ListFolderChildren(folderId string) (*[]byte, *http.Header, err
 
 	res, err := c.get(link)
 	defer res.Body.Close()
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
-
 }
 
 func (c *Client) CreateFolder(parentId, name string) (*[]byte, *http.Header, error) {
@@ -78,7 +77,7 @@ func (c *Client) CreateFolder(parentId, name string) (*[]byte, *http.Header, err
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -100,7 +99,7 @@ func (c *Client) MoveFolder(folderId, newParentId, name string) (*[]byte,
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 
 }

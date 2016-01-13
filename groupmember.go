@@ -24,7 +24,7 @@ func (c *Client) ListGroupMembers(groupId string) (*[]byte, *http.Header, error)
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -44,7 +44,7 @@ func (c *Client) AddGroupMember(groupId, name string) (*[]byte, *http.Header, er
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -58,7 +58,7 @@ func (c *Client) GetGroupMember(groupId, email string) (*[]byte, *http.Header, e
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 

@@ -17,7 +17,7 @@ func (c *Client) ListSFInvitations(email string) (*[]byte, *http.Header, error) 
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -32,7 +32,7 @@ func (c *Client) ViewPendingSFInvitation(email, sid string) (*[]byte, *http.Head
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
@@ -49,7 +49,7 @@ func (c *Client) AcceptSFInvitation(email, sid string, external int) (*[]byte, *
 		return nil, nil, err
 	}
 
-	body, header := unpackageResponse(res)
+	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
 
