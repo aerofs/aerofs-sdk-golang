@@ -6,52 +6,42 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/url"
 	"strings"
 )
 
 // File Related Operations
 // TODO : include on-demand fields
-func (c *Client) GetFileMetadata(fileId string) (*File, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "files", fileId}, "/"),
-	}
+func (c *Client) GetFileMetadata(fileId string, fields []string) (*[]byte,
+	*http.Header, error) {
+	route := strings.Join([]string{"files", fileId}, "/")
+	query := url.Values{"fields": fields}
+	link := c.getURL(route, query.Encode())
 
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	file := File{}
-	file.Etag = res.Header.Get("ETag")
-	err = GetEntity(res, &file)
-	return &file, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) GetFilePath(fileId string) (*File, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "files", fileId, "path"}, "/"),
-	}
+func (c *Client) GetFilePath(fileId string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"files", fileId, "path"}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	file := File{}
-	err = GetEntity(res, &file)
-	return &file, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
-
-/*
-func (c *Client) GetFileContent(fileid string) (*File, error) {
-	route := strings.Join([]string{"files", fileid, "content"}, "/")
-}
-*/
 
 // Instantiate a newfile
 func (c *Client) CreateFile(file File) (*File, error) {

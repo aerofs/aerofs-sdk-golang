@@ -2,72 +2,51 @@ package aerofs
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
-	"net/url"
+	"fmt"
+	"net/http"
 	"strings"
 )
 
-func (c *Client) ListSharedFolders(email string, etags []string) (*[]SharedFolder, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "users", email, "shares"}, "/"),
-	}
+func (c *Client) ListSharedFolders(email string, etags []string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"users", email, "shares"}, "/")
+	link := c.getURL(route, "")
+	newHeader := http.Header{"If-None-Match": etags}
 
-	if len(etags) > 0 {
-		v := url.Values{"If-None-Match": etags}
-		link.RawQuery = v.Encode()
-	}
-
-	res, err := c.get(link.String())
+	res, err := c.request("GET", link, &newHeader)
+	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	folderList := []SharedFolder{}
-	err = GetEntity(res, &folderList)
-	return &folderList, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) ListSharedFolderMetadata(sid string, etags []string) (*SharedFolder, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "shares", sid}, "/"),
-	}
+func (c *Client) ListSharedFolderMetadata(sid string, etags []string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"shares", sid}, "/")
+	link := c.getURL(route, "")
+	newHeader := http.Header{"If-None-Match": etags}
 
-	if len(etags) > 0 {
-		v := url.Values{"If-None-Match": etags}
-		link.RawQuery = v.Encode()
-	}
-
-	res, err := c.get(link.String())
+	res, err := c.request("GET", link, &newHeader)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	folder := SharedFolder{}
-	err = GetEntity(res, &folder)
-	return &folder, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) CreatedSharedFolder(name string) (*SharedFolder, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "shares"}, "/"),
-	}
+func (c *Client) CreateSharedFolder(name string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"shares"}, "/")
+	link := c.getURL(route, "")
+	data := []byte(fmt.Sprintf(`{"name" : %s"}`, name))
 
-	folder := SharedFolder{Name: name}
-	data, err := json.Marshal(folder)
+	res, err := c.post(link, bytes.NewBuffer(data))
+
 	if err != nil {
-		return nil, errors.New("Unable to marshal SharedFolder with given string")
+		return nil, nil, err
 	}
 
-	res, err := c.post(link.String(), bytes.NewBuffer(data))
-	if err != nil {
-		return nil, err
-	}
-
-	folder = SharedFolder{}
-	err = GetEntity(res, &folder)
-	return &folder, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }

@@ -79,12 +79,18 @@ func TestB(t *testing.T) {
 	fmt.Println(string(*b))
 
 	// Create a folder with root as parent
-	b, h, err = c.CreateFolder("root", "Moria")
+	b, h, err = c.CreateFolder("appdata", "Moria")
 	fmt.Println("CreateFolder")
 	fmt.Println(err)
 	fmt.Println(h)
 	fmt.Println(string(*b))
 
+	// Create a sharedFolder
+	b, h, err = c.CreateSharedFolder("TheShire_Shared")
+	fmt.Println("CreateSharedFolder")
+	fmt.Println(err)
+	fmt.Println(h)
+	fmt.Println(string(*b))
 	/*
 		pp, err := c.GetFolderPath("root")
 		fmt.Println("GetFolderPath")

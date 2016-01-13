@@ -142,7 +142,7 @@ func (c *Client) request(req, url string, options *http.Header) (*http.Response,
 
 	// If header map passed in , add additional KV pairs
 	request.Header = c.Header
-	if options != nil {
+	if options != nil && len(*options) > 0 {
 		for k, v := range *options {
 			for _, el := range v {
 				request.Header.Add(k, el)
@@ -152,5 +152,4 @@ func (c *Client) request(req, url string, options *http.Header) (*http.Response,
 
 	hClient := &http.Client{}
 	return hClient.Do(request)
-
 }
