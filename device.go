@@ -6,42 +6,60 @@ package aerofs
 //  - reformat the Path construction per each URL object to remove extraneous
 //  code
 import (
-	"net/url"
+	"bytes"
+	"encoding/json"
+	"errors"
+	"net/http"
 	"strings"
 )
 
 // Device specific API Calls
-func (c *Client) ListDevices(email string) (*[]Device, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "users", email, "devices"}, "/"),
-	}
+func (c *Client) ListDevices(email string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"users", email, "devices"}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	devices := []Device{}
-	err = GetEntity(res, &devices)
-	return &devices, err
-
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
-func (c *Client) GetDeviceMetadata(deviceID string) (*Device, error) {
-	link := url.URL{Scheme: "https",
-		Host: c.Host,
-		Path: strings.Join([]string{API, "devices", deviceID}, "/"),
-	}
+func (c *Client) GetDeviceMetadata(deviceId string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"devices", deviceId}, "/")
+	link := c.getURL(route, "")
 
-	res, err := c.get(link.String())
+	res, err := c.get(link)
 	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	device := Device{}
-	err = GetEntity(res, &device)
-	return &device, err
+	body, header := unpackageResponse(res)
+	return body, header, err
+}
+
+func (c *Client) UpdateDeviceMetadata(deviceName string) (*[]byte, *http.Header, error) {
+	route := strings.Join([]string{"devices", deviceName}, "/")
+	link := c.getURL(route, "")
+	newDevice := map[string]string{
+		"name": deviceName,
+	}
+
+	data, err := json.Marshal(newDevice)
+	if err != nil {
+		return nil, nil, errors.New("Unable to marshal new device")
+	}
+
+	res, err := c.put(link, bytes.NewBuffer(data))
+	defer res.Body.Close()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	body, header := unpackageResponse(res)
+	return body, header, err
 }

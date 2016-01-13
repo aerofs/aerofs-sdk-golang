@@ -4,58 +4,61 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"strings"
 )
 
 // List all associated groups for a shared folder with a given identifier
-func (c *Client) ListSFGroups(sid string) (*[]SFGroupMember, error) {
+func (c *Client) ListSFGroups(sid string) (*[]byte, *http.Header, error) {
 	path := strings.Join([]string{"shares", sid, "groups"}, "/")
 	link := c.getURL(path, "")
 
 	res, err := c.get(link)
+	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	sfgmList := []SFGroupMember{}
-	err = GetEntity(res, &sfgmList)
-	return &sfgmList, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
 // Retrieve information for a group associated with a shared folder
 // As of now, this only returns the new permissions associated with each group
 // and the two argument
-func (c *Client) GetSFGroups(sid, gid string) (*SFGroupMember, error) {
+func (c *Client) GetSFGroups(sid, gid string) (*[]byte, *http.Header, error) {
 	path := strings.Join([]string{"shares", sid, "members", gid}, "/")
 	link := c.getURL(path, "")
 
 	res, err := c.get(link)
+	defer res.Body.Close()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	sfgm := SFGroupMember{}
-	err = GetEntity(res, &sfgm)
-	return &sfgm, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
 // Construct a new group for an existing Shared Folder
-func (c *Client) AddGroupToSharedFolder(group SFGroupMember) (*SFGroupMember, error) {
-	path := strings.Join([]string{"shares", group.Id, "groups"}, "/")
+func (c *Client) AddGroupToSharedFolder(sid string, permissions []string) (*[]byte, *http.Header, error) {
+	path := strings.Join([]string{"shares", sid, "groups"}, "/")
 	link := c.getURL(path, "")
-
-	data, err := json.Marshal(group)
+	reqBody := map[string]interface{}{
+		"id":          sid,
+		"permissions": permissions,
+	}
+	data, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, errors.New(`Unable to marshal passed in SharedFolderGroupMember`)
+		return nil, nil, errors.New(`Unable to marshal passed in SharedFolderGroupMember`)
 	}
 	res, err := c.post(link, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	sfgm := SFGroupMember{}
-	err = GetEntity(res, &sfgm)
-	return &sfgm, err
+	body, header := unpackageResponse(res)
+	return body, header, err
 }
 
 // Modify the existing permissions of a group for an existing shared folder
