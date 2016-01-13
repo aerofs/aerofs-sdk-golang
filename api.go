@@ -16,10 +16,7 @@ import (
 	"strings"
 )
 
-// Retrieve array of Appliance users
-// limit : The maximum number of entries returned
-// after : An index to the first entry to be retrieved
-// before: An index to the last possible entry to be retrieved
+// User Related Calls
 func (c *Client) ListUsers(limit int, after, before *int) (*[]byte, *http.Header,
 	error) {
 	route := "users"
@@ -43,7 +40,6 @@ func (c *Client) ListUsers(limit int, after, before *int) (*[]byte, *http.Header
 	return body, header, err
 }
 
-// Retrieve a single user
 func (c *Client) GetUser(email string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email}, "/")
 	link := c.getURL(route, "")
@@ -58,7 +54,6 @@ func (c *Client) GetUser(email string) (*[]byte, *http.Header, error) {
 	return body, header, err
 }
 
-// Create a user with given email and name
 func (c *Client) CreateUser(email, firstName, lastName string) (*[]byte,
 	*http.Header, error) {
 	route := "users"
@@ -144,7 +139,8 @@ func (c *Client) DisableTwoFactorAuth(email string) error {
 	return err
 }
 
-// Return a list of Invitations to shared folders for a given user
+// Shared Folder Invitation Calls
+
 func (c *Client) ListSFInvitations(email string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "invitations"}, "/")
 	link := c.getURL(route, "")
@@ -158,7 +154,6 @@ func (c *Client) ListSFInvitations(email string) (*[]byte, *http.Header, error) 
 	return body, header, err
 }
 
-// View invitation metadata for a pending invitation
 func (c *Client) ViewPendingSFInvitation(email, sid string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "invitations", sid}, "/")
 	link := c.getURL(route, "")
@@ -173,7 +168,6 @@ func (c *Client) ViewPendingSFInvitation(email, sid string) (*[]byte, *http.Head
 	return body, header, err
 }
 
-// Accept a pending Shared Folder invitation
 func (c *Client) AcceptSFInvitation(email, sid string, external int) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "invitations", sid}, "/")
 	query := url.Values{}
@@ -200,7 +194,8 @@ func (c *Client) IgnoreSFInvitation(email, sid string) error {
 	return err
 }
 
-// Retrieve information about a person invited to an AeroFS instance
+// Inviteee Related Calls
+
 func (c *Client) GetInvitee(email string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"invitees", email}, "/")
 	link := c.getURL(route, "")
@@ -215,7 +210,6 @@ func (c *Client) GetInvitee(email string) (*[]byte, *http.Header, error) {
 	return body, header, err
 }
 
-// Create an invitation
 func (c *Client) CreateInvitee(email_to, email_from string) (*[]byte,
 	*http.Header, error) {
 	route := "invitees"
@@ -249,7 +243,8 @@ func (c *Client) DeleteInvitee(email string) error {
 	return err
 }
 
-// TODO : offset and results should be optional ( via pointers??)
+// Group related calls
+
 func (c *Client) ListGroups(offset, results int) (*[]byte, *http.Header, error) {
 	route := "groups"
 	query := url.Values{}
@@ -267,7 +262,6 @@ func (c *Client) ListGroups(offset, results int) (*[]byte, *http.Header, error) 
 	return body, header, err
 }
 
-// Create a new user group given a new groupname
 func (c *Client) CreateGroup(groupName string) (*[]byte, *http.Header, error) {
 	route := "groups"
 	link := c.getURL(route, "")
@@ -285,7 +279,6 @@ func (c *Client) CreateGroup(groupName string) (*[]byte, *http.Header, error) {
 	return body, header, err
 }
 
-// Retrieve a group given a group identifier
 func (c *Client) GetGroup(groupId string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"request", groupId}, "/")
 	link := c.getURL(route, "")
@@ -301,7 +294,6 @@ func (c *Client) GetGroup(groupId string) (*[]byte, *http.Header, error) {
 
 }
 
-// Remove an existing group
 func (c *Client) DeleteGroup(groupId string) error {
 	route := strings.Join([]string{API, "groups", groupId}, "/")
 	link := c.getURL(route, "")
@@ -311,7 +303,8 @@ func (c *Client) DeleteGroup(groupId string) error {
 	return err
 }
 
-// GroupMember Functions
+// GroupMember calls
+
 func (c *Client) ListGroupMembers(groupId string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"groups", groupId, "members"}, "/")
 	link := c.getURL(route, "")
@@ -368,6 +361,8 @@ func (c *Client) RemoveMember(groupId, email string) error {
 	defer res.Body.Close()
 	return err
 }
+
+// File related calls
 
 func (c *Client) GetFileMetadata(fileId string, fields []string) (*[]byte,
 	*http.Header, error) {
@@ -480,8 +475,8 @@ func (c *Client) DeleteFile(fileid string, etags []string) error {
 	return err
 }
 
-// Retrieve the metadata of a specified folder
-// Path and children are on demand fields
+// Folder calls
+
 func (c *Client) GetFolderMetadata(folderId string, fields []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"folders", folderId}, "/")
 	query := ""
@@ -589,6 +584,8 @@ func (c *Client) ShareFolder(folderId string) error {
 	return err
 }
 
+// SharedFolder calls
+
 func (c *Client) ListSharedFolders(email string, etags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "shares"}, "/")
 	link := c.getURL(route, "")
@@ -632,6 +629,8 @@ func (c *Client) CreateSharedFolder(name string) (*[]byte, *http.Header, error) 
 	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
+
+// SharedFolder Member calls
 
 func (c *Client) ListSFMember(id string, etags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"shares", id, "members"}, "/")
@@ -719,6 +718,8 @@ func (c *Client) RemoveSFMember(id, email string, etags []string) (*[]byte, *htt
 	return body, header, err
 }
 
+// SharedFolder pending member calls
+
 func (c *Client) ListPendingMembers(sid string, etags []string) (*[]byte,
 	*http.Header, error) {
 	route := strings.Join([]string{"shares", sid, "pending"}, "/")
@@ -746,6 +747,8 @@ func (c *Client) GetPendingMember(id, email string) (*[]byte, *http.Header,
 	body, header, err := unpackageResponse(res)
 	return body, header, err
 }
+
+// SharedFolder Invitation calls
 
 func (c *Client) InviteToSharedFolder(sid, email string, permissions []string,
 	note string) (*[]byte, *http.Header, error) {
@@ -778,6 +781,8 @@ func (c *Client) RemovePendingMember(sid, email string) error {
 	_, _, err = unpackageResponse(res)
 	return err
 }
+
+// SharedFolder Group Member calls
 
 // List all associated groups for a shared folder with a given identifier
 func (c *Client) ListSFGroups(sid string) (*[]byte, *http.Header, error) {
@@ -865,6 +870,7 @@ func (c *Client) RemoveSFGroup(sid, gid string) error {
 }
 
 // Device specific API Calls
+
 func (c *Client) ListDevices(email string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "devices"}, "/")
 	link := c.getURL(route, "")
