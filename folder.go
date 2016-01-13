@@ -109,7 +109,7 @@ func (c *Client) DeleteFolder(folderId string, etags []string) error {
 	newHeader := http.Header{"If-Match": etags}
 	link := c.getURL(route, "")
 
-	res, err := c.request("DELETE", link, &newHeader)
+	res, err := c.request("DELETE", link, &newHeader, nil)
 	res.Body.Close()
 	return err
 }

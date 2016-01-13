@@ -14,7 +14,7 @@ func (c *Client) ListPendingMembers(sid string, etags []string) (*[]byte,
 	reqHeader := http.Header{"If-None-Match": etags}
 	link := c.getURL(route, "")
 
-	res, err := c.request("GET", link, &reqHeader)
+	res, err := c.request("GET", link, &reqHeader, nil)
 	if err != nil {
 		return nil, nil, err
 	}

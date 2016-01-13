@@ -67,9 +67,14 @@ func (c *Client) CreateFile(file File) (*File, error) {
 
 func (c *Client) DeleteFile(fileid string, etags []string) error {
 	route := strings.Join([]string{"files", fileid}, "/")
+	newHeader := http.Header{"If-Match": etags}
 	link := c.getURL(route, "")
 
-	res, err := c.del(link)
+	res, err := c.request("DEL", link, &newHeader, nil)
 	defer res.Body.Close()
+	if err != nil {
+		return err
+	}
+	_, _, err = unpackageResponse(res)
 	return err
 }

@@ -88,6 +88,7 @@ func (c *Client) RemoveSFGroup(sid, gid string) error {
 	path := strings.Join([]string{"shares", sid, "groups", gid}, "/")
 	link := c.getURL(path, "")
 
-	_, err := c.del(link)
+	res, err := c.del(link)
+	_, _, err = unpackageResponse(res)
 	return err
 }

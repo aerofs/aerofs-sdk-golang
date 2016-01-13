@@ -12,7 +12,7 @@ func (c *Client) ListSharedFolders(email string, etags []string) (*[]byte, *http
 	link := c.getURL(route, "")
 	newHeader := http.Header{"If-None-Match": etags}
 
-	res, err := c.request("GET", link, &newHeader)
+	res, err := c.request("GET", link, &newHeader, nil)
 	defer res.Body.Close()
 	if err != nil {
 		return nil, nil, err
@@ -27,7 +27,7 @@ func (c *Client) ListSharedFolderMetadata(sid string, etags []string) (*[]byte, 
 	link := c.getURL(route, "")
 	newHeader := http.Header{"If-None-Match": etags}
 
-	res, err := c.request("GET", link, &newHeader)
+	res, err := c.request("GET", link, &newHeader, nil)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -141,8 +141,8 @@ func (c *Client) del(url string) (*http.Response, error) {
 
 // Generic Handler for HTTP request
 // Allows the passing of additional HTTP request header K/V pairs
-func (c *Client) request(req, url string, options *http.Header) (*http.Response, error) {
-	request, err := http.NewRequest(req, url, nil)
+func (c *Client) request(req, url string, options *http.Header, body io.Reader) (*http.Response, error) {
+	request, err := http.NewRequest(req, url, body)
 	if err != nil {
 		return nil, errors.New("Unable to create HTTP " + req + " Request")
 	}
