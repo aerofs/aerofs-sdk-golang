@@ -18,7 +18,8 @@ import (
 )
 
 const (
-	API = "api/v1.3"
+	API       = "api/v1.3"
+	CHUNKSIZE = 5000
 )
 
 // A Client is used to communicate with an AeroFS Appliance and return the

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -373,7 +374,8 @@ func (c *Client) GetFilePath(fileId string) (*[]byte, *http.Header, error) {
 	return unpackageResponse(res)
 }
 
-func (c *Client) GetFileContent(fileId, etag_IfRange string, fileRanges, etags []string) (*[]byte, *http.Header, error) {
+//
+func (c *Client) GetFileContent(fileId, rangeEtag string, fileRanges, matchEtags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"files", fileId, "content"}, "/")
 	link := c.getURL(route, "")
 
@@ -385,12 +387,12 @@ func (c *Client) GetFileContent(fileId, etag_IfRange string, fileRanges, etags [
 		}
 	}
 
-	if etag_IfRange != "" {
-		newHeader.Set("If-Range", etag_IfRange)
+	if rangeEtag != "" {
+		newHeader.Set("If-Range", rangeEtag)
 	}
 
-	if len(etags) > 0 {
-		for _, v := range fileRanges {
+	if len(matchEtags) > 0 {
+		for _, v := range matchEtags {
 			newHeader.Add("If-None-Match", v)
 		}
 	}
@@ -424,6 +426,114 @@ func (c *Client) CreateFile(parentId, fileName string) (*[]byte, *http.Header,
 	}
 
 	return unpackageResponse(res)
+}
+
+// Functions that upload content to a file
+
+// Retrieve a files UploadID to be used for future content uploads
+// Upload Identifiers are only valid for ~24 hours
+func (c *Client) GetFileUploadId(fileId string) (string, error) {
+	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	link := c.getURL(route, "")
+	newHeader := http.Header{}
+	newHeader.Set("Content-Range", "bytes /*/")
+
+	res, err := c.request("PUT", link, &newHeader, nil)
+	defer res.Body.Close()
+	if err != nil {
+		return "", err
+	}
+
+	return res.Header.Get("Upload-ID"), nil
+}
+
+// Retrieve the list of bytes already transferred by an unfinished upload
+func (c *Client) GetUploadBytesSize(fileId, uploadId string) (int, error) {
+	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	link := c.getURL(route, "")
+	newHeader := http.Header{}
+	newHeader.Set("Content-Range", "bytes /*/")
+	newHeader.Set("Upload-ID", uploadId)
+	newHeader.Set("Content-Length", "0")
+
+	res, err := c.request("PUT", link, &newHeader, nil)
+	defer res.Body.Close()
+	if err != nil {
+		return 0, nil
+	}
+
+	bytesUploaded, err := strconv.Atoi(res.Header.Get("Range"))
+	if err != nil {
+		return 0, errors.New("Unable to parse value of bytes transferred from HTTP-Header")
+	}
+	return bytesUploaded, err
+}
+
+// Upload a single file chunk
+func (c *Client) UploadFileChunk(fileId, uploadId string, chunks *[]byte, startIndex, lastIndex int) (*http.Header, error) {
+	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	link := c.getURL(route, "")
+	byteRange := fmt.Sprintf("bytes %d-%d/*", startIndex, lastIndex)
+	newHeader := http.Header{}
+	newHeader.Set("Content-Range", byteRange)
+	newHeader.Set("Upload-ID", uploadId)
+	newHeader.Set("Content-Length", "0")
+
+	res, err := c.request("PUT", link, &newHeader, bytes.NewBuffer(*chunks))
+	defer res.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	_, h, e := unpackageResponse(res)
+	return h, e
+}
+
+// Upload a file
+func (c *Client) UploadFile(fileId, uploadId string, file io.Reader, etags []string) error {
+	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	link := c.getURL(route, "")
+	newHeader := http.Header{"If-Match": etags}
+	newHeader.Set("Upload-ID", uploadId)
+
+	//var fileErr error
+	//var httpErr error
+	startIndex := 0
+	endIndex := 0
+	chunk := make([]byte, CHUNKSIZE)
+
+	// Iterate over the file in CHUNKSIZE pieces until EOF occurs
+	// Do not set "Instance-Length" of "Content-Range" until we hit EOF and use
+	// the format "bytes <startIndex>-<endIndex>/* for intermediary uploads
+ChunkLoop:
+	for {
+		size, fileErr := file.Read(chunk)
+		endIndex += size - 1
+
+		switch {
+		// If we have read all chunks, set Content-Range instance-Length
+		case fileErr == io.EOF:
+			byteRange := fmt.Sprintf("bytes %d-%d/%d", startIndex, endIndex, endIndex)
+			newHeader.Set("Content-Range", byteRange)
+		case fileErr != nil:
+			return fileErr
+		case fileErr == nil:
+			byteRange := fmt.Sprintf("bytes %d-%d/*", startIndex, endIndex)
+			newHeader.Set("Content-Range", byteRange)
+		}
+
+		res, httpErr := c.request("PUT", link, &newHeader, bytes.NewBuffer(chunk))
+		if httpErr != nil {
+			return httpErr
+		}
+		defer res.Body.Close()
+		if fileErr == io.EOF {
+			break ChunkLoop
+		}
+
+		startIndex += size
+	}
+	return nil
 }
 
 func (c *Client) MoveFile(fileId, parentId, name string, etags []string) (*[]byte, *http.Header, error) {

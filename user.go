@@ -13,18 +13,17 @@ import (
 
 // The response structure returned from a ListUser(..) call
 type userListResponse struct {
-	HasMore bool       `json:"has_more"`
-	Users   []UserDesc `json:"data"`
+	HasMore bool   `json:"has_more"`
+	Users   []User `json:"data"`
 }
 
 // Wraps the data members of a User and the API Client required to mutate
-type User struct {
+type UserClient struct {
 	APIClient *Client `json:"-"`
-	Desc      UserDesc
+	Desc      User
 }
 
-// The fields of a User
-type UserDesc struct {
+type User struct {
 	Email       string         `json:"email"`
 	FirstName   string         `json:"first_name"`
 	LastName    string         `json:"last_name"`
@@ -33,13 +32,13 @@ type UserDesc struct {
 }
 
 // Return an existing user
-func GetUser(client *Client, email string) (*User, error) {
+func GetUser(client *Client, email string) (*UserClient, error) {
 	body, _, err := client.GetUser(email)
 	if err != nil {
 		return nil, err
 	}
 
-	u := User{APIClient: client}
+	u := UserClient{APIClient: client}
 	err = json.Unmarshal(*body, &u.Desc)
 	if err != nil {
 		fmt.Println(err)
@@ -47,6 +46,21 @@ func GetUser(client *Client, email string) (*User, error) {
 	}
 
 	return &u, nil
+}
+
+// Get a list of Users
+func ListUsers(client *Client, limit int) (*[]User, error) {
+	body, _, err := client.ListUsers(limit, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	users := []User{}
+	err = json.Unmarshal(*body, &users)
+	if err != nil {
+		return nil, errors.New("Unable to unmarshal a retrieved list of users")
+	}
+	return &users, nil
 }
 
 // Create a new user and return
@@ -57,8 +71,8 @@ func CreateUser(client *Client, email, firstName, lastName string) (*User, error
 		return nil, err
 	}
 
-	u := User{APIClient: client}
-	err = json.Unmarshal(*body, &u.Desc)
+	u := User{}
+	err = json.Unmarshal(*body, &u)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal new User")
 	}
@@ -67,7 +81,7 @@ func CreateUser(client *Client, email, firstName, lastName string) (*User, error
 }
 
 // Update a users first, last Name
-func (u *User) Update(newFirstName, newLastName string) error {
+func (u *UserClient) Update(newFirstName, newLastName string) error {
 	body, _, err := u.APIClient.UpdateUser(u.Desc.Email, newFirstName, newLastName)
 	if err != nil {
 		return err
@@ -84,13 +98,13 @@ func (u *User) Update(newFirstName, newLastName string) error {
 }
 
 // Change the user's password
-func (u *User) changePassword(password string) error {
+func (u *UserClient) changePassword(password string) error {
 	err := u.APIClient.ChangePassword(u.Desc.Email, password)
 	return err
 }
 
 // Disable two-factor authentication
-func (u *User) DisableTwoFactorAuth() error {
+func (u *UserClient) DisableTwoFactorAuth() error {
 	err := u.APIClient.DisableTwoFactorAuth(u.Desc.Email)
 	return err
 }
