@@ -31,6 +31,10 @@ type User struct {
 	Invitations []Invitation   `json:"invitations"`
 }
 
+func (u User) String() string {
+	return fmt.Sprintf("\nEmail : %s\n FN : %s\n LN : %s\n", u.Email, u.FirstName, u.LastName)
+}
+
 // Return an existing user
 func GetUser(client *Client, email string) (*UserClient, error) {
 	body, _, err := client.GetUser(email)

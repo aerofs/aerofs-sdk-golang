@@ -10,6 +10,7 @@ package aerofs
 //      error
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -114,6 +115,10 @@ func (c *Client) post(url string, buffer io.Reader) (*http.Response, error) {
 	}
 
 	request.Header = c.Header
+	if buffer == nil {
+		request.Header.Del("Content-Type")
+	}
+
 	hClient := &http.Client{}
 	return hClient.Do(request)
 }
@@ -126,6 +131,11 @@ func (c *Client) put(url string, buffer io.Reader) (*http.Response, error) {
 	}
 
 	request.Header = c.Header
+
+	if buffer == nil {
+		request.Header.Del("Content-Type")
+	}
+
 	hClient := &http.Client{}
 	return hClient.Do(request)
 }
@@ -144,8 +154,8 @@ func (c *Client) del(url string) (*http.Response, error) {
 
 // Generic Handler for HTTP request
 // Allows the passing of additional HTTP request header K/V pairs
-func (c *Client) request(req, url string, options *http.Header, body io.Reader) (*http.Response, error) {
-	request, err := http.NewRequest(req, url, body)
+func (c *Client) request(req, url string, options *http.Header, buffer io.Reader) (*http.Response, error) {
+	request, err := http.NewRequest(req, url, buffer)
 	if err != nil {
 		return nil, errors.New("Unable to create HTTP " + req + " Request")
 	}
@@ -160,6 +170,13 @@ func (c *Client) request(req, url string, options *http.Header, body io.Reader) 
 		}
 	}
 
+	// If we are not sending data, delete the default content-Type
+	if buffer == nil {
+		request.Header.Del("Content-Type")
+	}
+
+	fmt.Println(url)
+	fmt.Println(request.Header)
 	hClient := &http.Client{}
 	return hClient.Do(request)
 }

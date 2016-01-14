@@ -432,19 +432,28 @@ func (c *Client) CreateFile(parentId, fileName string) (*[]byte, *http.Header,
 
 // Retrieve a files UploadID to be used for future content uploads
 // Upload Identifiers are only valid for ~24 hours
-func (c *Client) GetFileUploadId(fileId string) (string, error) {
+func (c *Client) GetFileUploadId(fileId string, etags []string) (string, error) {
 	route := strings.Join([]string{"files", fileId, "content"}, "/")
 	link := c.getURL(route, "")
 	newHeader := http.Header{}
-	newHeader.Set("Content-Range", "bytes /*/")
+	newHeader.Set("Content-Range", "bytes */*")
+	newHeader.Set("Content-Length", "0")
+	if len(etags) > 0 {
+		for _, v := range etags {
+			newHeader.Add("If-Match", v)
+		}
+	}
 
 	res, err := c.request("PUT", link, &newHeader, nil)
 	defer res.Body.Close()
+
+	_, h, err := unpackageResponse(res)
 	if err != nil {
 		return "", err
 	}
 
-	return res.Header.Get("Upload-ID"), nil
+	fmt.Println(h)
+	return h.Get("Upload-ID"), nil
 }
 
 // Retrieve the list of bytes already transferred by an unfinished upload

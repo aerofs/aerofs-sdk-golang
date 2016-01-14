@@ -55,7 +55,7 @@ func TestAPI_CreateUser(t *testing.T) {
 	}
 
 	t.Log("Successfully created the following new user")
-	desc := UserDesc{}
+	desc := User{}
 	json.Unmarshal(*b, &desc)
 	t.Log(desc)
 }
@@ -81,8 +81,7 @@ func TestAPI_UpdateUser(t *testing.T) {
 	c, _ := NewClient(adminToken, appHost)
 
 	email := fmt.Sprintf("test_email%d@moria.com", rand.Intn(10000))
-	origUser := UserDesc{email, "Gimli", "Son of Gloin", []SharedFolder{},
-		[]Invitation{}}
+	origUser := User{email, "Gimli", "Son of Gloin", []SharedFolder{}, []Invitation{}}
 	new_firstName := "Sarumon"
 	new_lastName := "Of Isengard"
 
@@ -98,18 +97,48 @@ func TestAPI_UpdateUser(t *testing.T) {
 		t.Fatal(e)
 	}
 
-	newUser := UserDesc{}
+	newUser := User{}
 	e = json.Unmarshal(*b, &newUser)
 	if e != nil {
 		t.Log("Error when attempting to unmarshal UserDescriptor")
 		t.Fatal(e)
 	}
 
-	fmt.Println(newUser)
 	if reflect.DeepEqual(origUser, newUser) {
 		t.Fatalf("New user %v is same from %v", newUser, origUser)
 	}
 	t.Log("New user %v is different from %v", newUser, origUser)
+}
+
+// Retrieve an uploadId for an existing File
+func TestAPI_GetUploadId(t *testing.T) {
+	c, _ := NewClient(userToken, appHost)
+	data, _, err := c.ListFolderChildren("root")
+	if err != nil {
+		t.Fatal("Error retrieving list of root Children")
+	}
+
+	children := Children{}
+	err = json.Unmarshal(*data, &children)
+	if err != nil {
+		t.Fatal("Error unmarshalling the children of root folder")
+	}
+
+	var fileId string
+	var etag string
+	for _, f := range children.Files {
+		if f.Name == "appconfig.json" {
+			fileId = f.Id
+			etag = f.Etag
+		}
+	}
+
+	t.Logf("FileId for appconfig.json is %s:%s", fileId, etag)
+	uploadId, err := c.GetFileUploadId(fileId, []string{etag})
+	if err != nil {
+		t.Fatalf("Unable to get file upload id because of %s", err)
+	}
+	t.Logf("UploadId for appconfig.json is %s", uploadId)
 }
 
 // Verify a user is created and then Deleted
