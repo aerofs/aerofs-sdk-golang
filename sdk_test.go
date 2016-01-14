@@ -3,6 +3,7 @@ package aerofs
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"testing"
 )
 
@@ -12,7 +13,7 @@ func TestGetUser(t *testing.T) {
 	c, _ := NewClient(userToken, "share.syncfs.com")
 	email := "daniel.cardoza@aerofs.com"
 
-	t.Logf("Creating a new user %s", email)
+	t.Logf("Retrieving an existing user %s", email)
 	u, e := GetUser(c, email)
 
 	if e != nil {
@@ -30,6 +31,7 @@ func TestCreateUser(t *testing.T) {
 	c, _ := NewClient(adminToken, "share.syncfs.com")
 
 	t.Logf("Creating a new user")
+	rand.Seed(int64(os.Getpid()))
 	email := fmt.Sprintf("elrond.rivendell%d@middleearth.org", rand.Intn(10000))
 	u, e := CreateUser(c, email, "Elrond", "Rivendell")
 
@@ -40,4 +42,23 @@ func TestCreateUser(t *testing.T) {
 		t.Logf("Successfully created a new user")
 		t.Log(*u)
 	}
+}
+
+// Update an already existing user and ensure the update mutates the User object
+func TestUpdateUser(t *testing.T) {
+	c, _ := NewClient(userToken, "share.syncfs.com")
+	email := "daniel.cardoza@aerofs.com"
+
+	t.Logf("Retrieving an existing user %s", email)
+	u, e := GetUser(c, email)
+	t.Log(*u)
+	e = u.Update("NEW_FIRST", "NEW_LAST")
+	if e != nil {
+		t.Log(e)
+		t.Fatalf("Unable to update user")
+	} else {
+		t.Logf("Successfully updated user")
+		t.Log(*u)
+	}
+
 }

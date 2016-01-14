@@ -9,8 +9,22 @@ import (
 // The User object is used to easily modify backend users assuming
 // the object has a reference to a given APIClient. Methods are able to modify
 // internal user state as well as backend state such as user password
+// Each object has a corresponding Descriptor struct containing its members
+
+// The response structure returned from a ListUser(..) call
+type userListResponse struct {
+	HasMore bool       `json:"has_more"`
+	Users   []UserDesc `json:"data"`
+}
+
+// Wraps the data members of a User and the API Client required to mutate
 type User struct {
-	APIClient   *Client        `json:"-"`
+	APIClient *Client `json:"-"`
+	Desc      UserDesc
+}
+
+// The fields of a User
+type UserDesc struct {
 	Email       string         `json:"email"`
 	FirstName   string         `json:"first_name"`
 	LastName    string         `json:"last_name"`
@@ -26,7 +40,7 @@ func GetUser(client *Client, email string) (*User, error) {
 	}
 
 	u := User{APIClient: client}
-	err = json.Unmarshal(*body, &u)
+	err = json.Unmarshal(*body, &u.Desc)
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New("Unable to unmarshal new User")
@@ -44,7 +58,7 @@ func CreateUser(client *Client, email, firstName, lastName string) (*User, error
 	}
 
 	u := User{APIClient: client}
-	err = json.Unmarshal(*body, &u)
+	err = json.Unmarshal(*body, &u.Desc)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal new User")
 	}
@@ -53,15 +67,15 @@ func CreateUser(client *Client, email, firstName, lastName string) (*User, error
 }
 
 // Update a users first, last Name
-func (u *User) update(newFirstName, newLastName string) error {
-	body, _, err := u.APIClient.UpdateUser(u.Email, newFirstName, newLastName)
+func (u *User) Update(newFirstName, newLastName string) error {
+	body, _, err := u.APIClient.UpdateUser(u.Desc.Email, newFirstName, newLastName)
 	if err != nil {
 		return err
 	}
 
 	// TODO : When unmarshalling a failure occurs, is it possible for the body we
 	// unmarshal to has changes inside?
-	err = json.Unmarshal(*body, u)
+	err = json.Unmarshal(*body, &u.Desc)
 	if err != nil {
 		return errors.New("Unable to update user")
 	}
@@ -71,12 +85,12 @@ func (u *User) update(newFirstName, newLastName string) error {
 
 // Change the user's password
 func (u *User) changePassword(password string) error {
-	err := u.APIClient.ChangePassword(u.Email, password)
+	err := u.APIClient.ChangePassword(u.Desc.Email, password)
 	return err
 }
 
 // Disable two-factor authentication
 func (u *User) DisableTwoFactorAuth() error {
-	err := u.APIClient.DisableTwoFactorAuth(u.Email)
+	err := u.APIClient.DisableTwoFactorAuth(u.Desc.Email)
 	return err
 }

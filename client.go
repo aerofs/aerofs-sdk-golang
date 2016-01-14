@@ -21,6 +21,8 @@ const (
 	API = "api/v1.3"
 )
 
+// A Client is used to communicate with an AeroFS Appliance and return the
+// resultant responses
 type Client struct {
 	// The hostname/IP of the AeroFS Appliance
 	// Used when constructing the default API Prefix for all subsequent API calls
