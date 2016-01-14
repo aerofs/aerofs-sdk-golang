@@ -17,12 +17,13 @@ type userListResponse struct {
 	Users   []User `json:"data"`
 }
 
-// Wraps the data members of a User and the API Client required to mutate
+// User, Client wrapper
 type UserClient struct {
 	APIClient *Client `json:"-"`
 	Desc      User
 }
 
+// User descriptor
 type User struct {
 	Email       string         `json:"email"`
 	FirstName   string         `json:"first_name"`
@@ -31,12 +32,13 @@ type User struct {
 	Invitations []Invitation   `json:"invitations"`
 }
 
+// Custom User print
 func (u User) String() string {
 	return fmt.Sprintf("\nEmail : %s\n FN : %s\n LN : %s\n", u.Email, u.FirstName, u.LastName)
 }
 
-// Return an existing user
-func GetUser(client *Client, email string) (*UserClient, error) {
+// Return an existing userClient given an email and client reference
+func GetUserClient(client *Client, email string) (*UserClient, error) {
 	body, _, err := client.GetUser(email)
 	if err != nil {
 		return nil, err
@@ -53,6 +55,7 @@ func GetUser(client *Client, email string) (*UserClient, error) {
 }
 
 // Get a list of Users
+// Note that these users are not tied to the given client
 func ListUsers(client *Client, limit int) (*[]User, error) {
 	body, _, err := client.ListUsers(limit, nil, nil)
 	if err != nil {
@@ -67,9 +70,8 @@ func ListUsers(client *Client, limit int) (*[]User, error) {
 	return &users, nil
 }
 
-// Create a new user and return
-func CreateUser(client *Client, email, firstName, lastName string) (*User, error) {
-	// CreateUser returns a Location of the new resource
+// Create a new user Client and return
+func CreateUserClient(client *Client, email, firstName, lastName string) (*UserClient, error) {
 	body, _, err := client.CreateUser(email, firstName, lastName)
 	if err != nil {
 		return nil, err
@@ -81,7 +83,7 @@ func CreateUser(client *Client, email, firstName, lastName string) (*User, error
 		return nil, errors.New("Unable to unmarshal new User")
 	}
 
-	return &u, nil
+	return &UserClient{client, u}, nil
 }
 
 // Update a users first, last Name
@@ -91,8 +93,6 @@ func (u *UserClient) Update(newFirstName, newLastName string) error {
 		return err
 	}
 
-	// TODO : When unmarshalling a failure occurs, is it possible for the body we
-	// unmarshal to be mutated?
 	err = json.Unmarshal(*body, &u.Desc)
 	if err != nil {
 		return errors.New("Unable to update user")
@@ -103,12 +103,15 @@ func (u *UserClient) Update(newFirstName, newLastName string) error {
 
 // Change the user's password
 func (u *UserClient) changePassword(password string) error {
-	err := u.APIClient.ChangePassword(u.Desc.Email, password)
-	return err
+	return u.APIClient.ChangePassword(u.Desc.Email, password)
 }
 
 // Disable two-factor authentication
 func (u *UserClient) DisableTwoFactorAuth() error {
-	err := u.APIClient.DisableTwoFactorAuth(u.Desc.Email)
-	return err
+	return u.APIClient.DisableTwoFactorAuth(u.Desc.Email)
+}
+
+// Delete the current user from the backend
+func (u *UserClient) Delete() error {
+	return u.APIClient.DeleteUser(u.Desc.Email)
 }

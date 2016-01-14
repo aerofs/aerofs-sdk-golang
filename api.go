@@ -457,13 +457,18 @@ func (c *Client) GetFileUploadId(fileId string, etags []string) (string, error) 
 }
 
 // Retrieve the list of bytes already transferred by an unfinished upload
-func (c *Client) GetUploadBytesSize(fileId, uploadId string) (int, error) {
+func (c *Client) GetUploadBytesSize(fileId, uploadId string, etags []string) (int, error) {
 	route := strings.Join([]string{"files", fileId, "content"}, "/")
 	link := c.getURL(route, "")
 	newHeader := http.Header{}
 	newHeader.Set("Content-Range", "bytes /*/")
 	newHeader.Set("Upload-ID", uploadId)
 	newHeader.Set("Content-Length", "0")
+	if len(etags) > 0 {
+		for _, v := range etags {
+			newHeader.Add("If-Match", v)
+		}
+	}
 
 	res, err := c.request("PUT", link, &newHeader, nil)
 	defer res.Body.Close()
@@ -505,8 +510,6 @@ func (c *Client) UploadFile(fileId, uploadId string, file io.Reader, etags []str
 	newHeader := http.Header{"If-Match": etags}
 	newHeader.Set("Upload-ID", uploadId)
 
-	//var fileErr error
-	//var httpErr error
 	startIndex := 0
 	endIndex := 0
 	chunk := make([]byte, CHUNKSIZE)
@@ -587,6 +590,7 @@ func (c *Client) DeleteFile(fileid string, etags []string) error {
 
 // Folder calls
 
+// Note
 func (c *Client) GetFolderMetadata(folderId string, fields []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"folders", folderId}, "/")
 	query := ""
@@ -618,7 +622,7 @@ func (c *Client) GetFolderPath(folderId string) (*[]byte, *http.Header, error) {
 	return unpackageResponse(res)
 }
 
-func (c *Client) ListFolderChildren(folderId string) (*[]byte, *http.Header, error) {
+func (c *Client) GetFolderChildren(folderId string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"folders", folderId, "children"}, "/")
 	link := c.getURL(route, "")
 
@@ -653,8 +657,7 @@ func (c *Client) CreateFolder(parentId, name string) (*[]byte, *http.Header, err
 
 // Move a folder given its existing unique ID, the ID of its new parent and its
 // new folder Name
-func (c *Client) MoveFolder(folderId, newParentId, newFolderName string) (*[]byte,
-	*http.Header, error) {
+func (c *Client) MoveFolder(folderId, newParentId, newFolderName string, etags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"folders", folderId}, "/")
 	link := c.getURL(route, "")
 
@@ -975,7 +978,7 @@ func (c *Client) RemoveSFGroup(sid, gid string) error {
 
 // Device specific API Calls
 
-func (c *Client) ListDevices(email string) (*[]byte, *http.Header, error) {
+func (c *Client) _ListDevices(email string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "devices"}, "/")
 	link := c.getURL(route, "")
 
@@ -986,6 +989,17 @@ func (c *Client) ListDevices(email string) (*[]byte, *http.Header, error) {
 	}
 
 	return unpackageResponse(res)
+}
+
+func (c *Client) ListDevices(email string) (*[]Device, error) {
+	body, _, err := c._ListDevices(email)
+	if err != nil {
+		return nil, err
+	}
+
+	devices := []Device{}
+	err = json.Unmarshal(*body, &devices)
+	return &devices, err
 }
 
 func (c *Client) GetDeviceMetadata(deviceId string) (*[]byte, *http.Header, error) {
@@ -1001,7 +1015,7 @@ func (c *Client) GetDeviceMetadata(deviceId string) (*[]byte, *http.Header, erro
 	return unpackageResponse(res)
 }
 
-func (c *Client) UpdateDeviceMetadata(deviceName string) (*[]byte, *http.Header, error) {
+func (c *Client) UpdateDevice(deviceName string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"devices", deviceName}, "/")
 	link := c.getURL(route, "")
 	newDevice := map[string]string{

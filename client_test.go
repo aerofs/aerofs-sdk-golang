@@ -110,7 +110,7 @@ func TestAPI_UpdateUser(t *testing.T) {
 	t.Log("New user %v is different from %v", newUser, origUser)
 }
 
-// Retrieve an uploadId for an existing File
+// Retrieve an uploadId, fileSize for an existing File
 func TestAPI_GetUploadId(t *testing.T) {
 	c, _ := NewClient(userToken, appHost)
 	data, _, err := c.ListFolderChildren("root")

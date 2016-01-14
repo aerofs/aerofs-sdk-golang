@@ -14,7 +14,7 @@ func TestGetUser(t *testing.T) {
 	email := "daniel.cardoza@aerofs.com"
 
 	t.Logf("Retrieving an existing user %s", email)
-	u, e := GetUser(c, email)
+	u, e := GetUserClient(c, email)
 
 	if e != nil {
 		t.Log(e)
@@ -50,7 +50,7 @@ func TestUpdateUser(t *testing.T) {
 	email := "daniel.cardoza@aerofs.com"
 
 	t.Logf("Retrieving an existing user %s", email)
-	u, e := GetUser(c, email)
+	u, e := GetUserClient(c, email)
 	t.Log(*u)
 	e = u.Update("NEW_FIRST", "NEW_LAST")
 	if e != nil {

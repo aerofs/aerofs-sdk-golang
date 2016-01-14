@@ -28,17 +28,6 @@ type Access struct {
 	Scopes     string `json:"scope"`
 }
 
-type Folder struct {
-	Id        string     `json:"id"`
-	Name      string     `json:"name"`
-	Parent    string     `json:"parent"`
-	IsShared  bool       `json:"is_shared"`
-	Sid       string     `json:"sid"`
-	Path      ParentPath `json:"path"`
-	ChildList Children   `json:"children"`
-	Etag      string
-}
-
 type File struct {
 	Id           string     `json:"id"`
 	Name         string     `json:"name"`
@@ -117,21 +106,8 @@ type Invitation struct {
 	Permissions []string `json:"permissions"`
 }
 
-type Device struct {
-	Id          string `json:"id"`
-	Owner       string `json:"owner"`
-	Name        string `json:"name"`
-	OSFamily    string `json:"os_family"`
-	InstallDate string `json:"install_data"`
-}
-
 type PermissionList struct {
 	Permissions []string `json:"permissions"`
-}
-
-type DeviceStatus struct {
-	Online   bool   `json:"online"`
-	LastSeen string `json:"last_seen"`
 }
 
 // Response specific structures
