@@ -39,6 +39,8 @@ func TestAPICreateClient(t *testing.T) {
 	}
 }
 
+// User Unittests
+
 // Create a new User
 func TestAPI_CreateUser(t *testing.T) {
 	c, _ := NewClient(adminToken, appHost)
@@ -97,7 +99,12 @@ func TestAPI_UpdateUser(t *testing.T) {
 	}
 
 	newUser := UserDesc{}
-	json.Unmarshal(*b, &newUser)
+	e = json.Unmarshal(*b, &newUser)
+	if e != nil {
+		t.Log("Error when attempting to unmarshal UserDescriptor")
+		t.Fatal(e)
+	}
+
 	fmt.Println(newUser)
 	if reflect.DeepEqual(origUser, newUser) {
 		t.Fatalf("New user %v is same from %v", newUser, origUser)
@@ -105,34 +112,27 @@ func TestAPI_UpdateUser(t *testing.T) {
 	t.Log("New user %v is different from %v", newUser, origUser)
 }
 
-/*
-// Return a List of Users
-func TestListUsers(t *testing.T) {
-	c, _ := NewClient(adminToken, appHost)
-	b, _, e := c.ListUsers(100, nil, nil)
-	if e != nil {
-		t.Logf("Error retrieving a list of users")
-		t.Fatal(e)
-	}
-	fmt.Println("GetUsers")
+// Verify a user is created and then Deleted
+func TestAPI_CreateDeleteUser(t *testing.T) {
 
-	fmt.Println(string(*b))
 }
 
-func TestB(t *testing.T) {
-	c, err := NewClient(adminToken, "share.syncfs.com")
-	if err != nil {
-		fmt.Println("BAD")
-	}
+// Vertify an invitee is invited and then the invitation is deleted
+func TestAPI_CreateDeleteInvitee(t *testing.T) {
 
-	// Retrieve single user
+}
+
+// Verify an invitee is created and can be retrieved
+func TestAPI_CreateGetInvitees(t *testing.T) {
+
+}
+
+/*
+func TestB(t *testing.T) {
+		// Retrieve single user
 	b, _, e = c.GetUser("daniel.cardoza@aerofs.com")
 	fmt.Println("GetUser")
 	fmt.Println(string(*b))
-
-	e = c.DeleteUser("test_email@rivend.com")
-	fmt.Println("DeleteUser")
-	fmt.Println(e)
 
 	// Get invitation list
 	b, _, e = c.GetInvitee("daniel.cardoza@aerofs.com")

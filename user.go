@@ -74,7 +74,7 @@ func (u *User) Update(newFirstName, newLastName string) error {
 	}
 
 	// TODO : When unmarshalling a failure occurs, is it possible for the body we
-	// unmarshal to has changes inside?
+	// unmarshal to be mutated?
 	err = json.Unmarshal(*body, &u.Desc)
 	if err != nil {
 		return errors.New("Unable to update user")

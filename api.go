@@ -31,8 +31,7 @@ func (c *Client) ListUsers(limit int, after, before *int) (*[]byte, *http.Header
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetUser(email string) (*[]byte, *http.Header, error) {
@@ -45,8 +44,7 @@ func (c *Client) GetUser(email string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) CreateUser(email, firstName, lastName string) (*[]byte,
@@ -65,9 +63,7 @@ func (c *Client) CreateUser(email, firstName, lastName string) (*[]byte,
 	}
 
 	res, err := c.post(link, bytes.NewBuffer(data))
-	//	body, header, err := unpackageResponse(res)
 	return unpackageResponse(res)
-	//body, header, err
 }
 
 func (c *Client) UpdateUser(email, firstName, lastName string) (*[]byte,
@@ -86,8 +82,7 @@ func (c *Client) UpdateUser(email, firstName, lastName string) (*[]byte,
 	}
 
 	res, err := c.put(link, bytes.NewBuffer(data))
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) DeleteUser(email string) error {
@@ -142,8 +137,7 @@ func (c *Client) ListSFInvitations(email string) (*[]byte, *http.Header, error) 
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) ViewPendingSFInvitation(email, sid string) (*[]byte, *http.Header, error) {
@@ -156,8 +150,7 @@ func (c *Client) ViewPendingSFInvitation(email, sid string) (*[]byte, *http.Head
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) AcceptSFInvitation(email, sid string, external int) (*[]byte, *http.Header, error) {
@@ -172,8 +165,7 @@ func (c *Client) AcceptSFInvitation(email, sid string, external int) (*[]byte, *
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // Ignore an existing invitation to a shared folder
@@ -198,8 +190,7 @@ func (c *Client) GetInvitee(email string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) CreateInvitee(email_to, email_from string) (*[]byte,
@@ -222,8 +213,7 @@ func (c *Client) CreateInvitee(email_to, email_from string) (*[]byte,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // Delete an unsatisfied invitation
@@ -232,6 +222,7 @@ func (c *Client) DeleteInvitee(email string) error {
 	link := c.getURL(route, "")
 	res, err := c.del(link)
 	defer res.Body.Close()
+	_, _, err = unpackageResponse(res)
 	return err
 }
 
@@ -250,8 +241,7 @@ func (c *Client) ListGroups(offset, results int) (*[]byte, *http.Header, error) 
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) CreateGroup(groupName string) (*[]byte, *http.Header, error) {
@@ -267,8 +257,7 @@ func (c *Client) CreateGroup(groupName string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetGroup(groupId string) (*[]byte, *http.Header, error) {
@@ -281,9 +270,7 @@ func (c *Client) GetGroup(groupId string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
-
+	return unpackageResponse(res)
 }
 
 func (c *Client) DeleteGroup(groupId string) error {
@@ -307,8 +294,7 @@ func (c *Client) ListGroupMembers(groupId string) (*[]byte, *http.Header, error)
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) AddGroupMember(groupId, name string) (*[]byte, *http.Header, error) {
@@ -327,8 +313,7 @@ func (c *Client) AddGroupMember(groupId, name string) (*[]byte, *http.Header, er
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetGroupMember(groupId, email string) (*[]byte, *http.Header, error) {
@@ -341,8 +326,7 @@ func (c *Client) GetGroupMember(groupId, email string) (*[]byte, *http.Header, e
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) RemoveMember(groupId, email string) error {
@@ -351,6 +335,11 @@ func (c *Client) RemoveMember(groupId, email string) error {
 
 	res, err := c.del(link)
 	defer res.Body.Close()
+	if err != nil {
+		return err
+	}
+
+	_, _, err = unpackageResponse(res)
 	return err
 }
 
@@ -368,8 +357,7 @@ func (c *Client) GetFileMetadata(fileId string, fields []string) (*[]byte,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetFilePath(fileId string) (*[]byte, *http.Header, error) {
@@ -382,14 +370,14 @@ func (c *Client) GetFilePath(fileId string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetFileContent(fileId, etag_IfRange string, fileRanges, etags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"files", fileId, "content"}, "/")
 	link := c.getURL(route, "")
 
+	// Construct header
 	newHeader := http.Header{}
 	if len(fileRanges) > 0 {
 		for _, v := range fileRanges {
@@ -408,37 +396,48 @@ func (c *Client) GetFileContent(fileId, etag_IfRange string, fileRanges, etags [
 	}
 
 	res, err := c.request("GET", link, &newHeader, nil)
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return unpackageResponse(res)
 }
 
 // Instantiate a newfile
-func (c *Client) CreateFile(file File) (*File, error) {
+func (c *Client) CreateFile(parentId, fileName string) (*[]byte, *http.Header,
+	error) {
 	route := "files"
 	link := c.getURL(route, "")
 
-	data, err := json.Marshal(file)
+	newFile := map[string]string{
+		"parent": parentId,
+		"name":   fileName,
+	}
+	data, err := json.Marshal(newFile)
 	if err != nil {
-		return nil, errors.New("Unable to marshal the given file")
+		return nil, nil, errors.New("Unable to marshal the given file")
 	}
 
 	res, err := c.post(link, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	newFile := File{}
-	err = GetEntity(res, &newFile)
-	newFile.Etag = res.Header.Get("ETag")
-
-	return &newFile, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) MoveFile(fileId, parentId, name string, etags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"files", fileId}, "/")
 	link := c.getURL(route, "")
-	newHeader := http.Header{"If-Match": etags}
-	newFile := map[string]interface{}{
+
+	newHeader := http.Header{}
+	if len(etags) > 0 {
+		for _, v := range etags {
+			newHeader.Add("If-Match", v)
+		}
+	}
+
+	newFile := map[string]string{
 		"parent": parentId,
 		"name":   name,
 	}
@@ -449,14 +448,14 @@ func (c *Client) MoveFile(fileId, parentId, name string, etags []string) (*[]byt
 	}
 
 	res, err := c.request("PUT", link, &newHeader, bytes.NewBuffer(data))
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
+// There must be at least one etag present
 func (c *Client) DeleteFile(fileid string, etags []string) error {
 	route := strings.Join([]string{"files", fileid}, "/")
-	newHeader := http.Header{"If-Match": etags}
 	link := c.getURL(route, "")
+	newHeader := http.Header{"If-Match": etags}
 
 	res, err := c.request("DEL", link, &newHeader, nil)
 	defer res.Body.Close()
@@ -484,8 +483,7 @@ func (c *Client) GetFolderMetadata(folderId string, fields []string) (*[]byte, *
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetFolderPath(folderId string) (*[]byte, *http.Header, error) {
@@ -498,8 +496,7 @@ func (c *Client) GetFolderPath(folderId string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) ListFolderChildren(folderId string) (*[]byte, *http.Header, error) {
@@ -507,9 +504,11 @@ func (c *Client) ListFolderChildren(folderId string) (*[]byte, *http.Header, err
 	link := c.getURL(route, "")
 
 	res, err := c.get(link)
+	if err != nil {
+		return nil, nil, err
+	}
 	defer res.Body.Close()
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) CreateFolder(parentId, name string) (*[]byte, *http.Header, error) {
@@ -530,18 +529,17 @@ func (c *Client) CreateFolder(parentId, name string) (*[]byte, *http.Header, err
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // Move a folder given its existing unique ID, the ID of its new parent and its
 // new folder Name
-func (c *Client) MoveFolder(folderId, newParentId, name string) (*[]byte,
+func (c *Client) MoveFolder(folderId, newParentId, newFolderName string) (*[]byte,
 	*http.Header, error) {
 	route := strings.Join([]string{"folders", folderId}, "/")
 	link := c.getURL(route, "")
 
-	content := map[string]string{"parent": newParentId, "name": name}
+	content := map[string]string{"parent": newParentId, "name": newFolderName}
 	data, err := json.Marshal(content)
 	if err != nil {
 		return nil, nil, errors.New("Unable to marshal JSON for moving folder")
@@ -552,9 +550,7 @@ func (c *Client) MoveFolder(folderId, newParentId, name string) (*[]byte,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
-
+	return unpackageResponse(res)
 }
 
 func (c *Client) DeleteFolder(folderId string, etags []string) error {
@@ -563,7 +559,11 @@ func (c *Client) DeleteFolder(folderId string, etags []string) error {
 	link := c.getURL(route, "")
 
 	res, err := c.request("DELETE", link, &newHeader, nil)
-	res.Body.Close()
+	defer res.Body.Close()
+	if err != nil {
+		_, _, err = unpackageResponse(res)
+	}
+
 	return err
 }
 
@@ -572,7 +572,11 @@ func (c *Client) ShareFolder(folderId string) error {
 	link := c.getURL(route, "")
 
 	res, err := c.put(link, nil)
-	res.Body.Close()
+	defer res.Body.Close()
+	if err != nil {
+		_, _, err = unpackageResponse(res)
+	}
+
 	return err
 }
 
@@ -589,8 +593,7 @@ func (c *Client) ListSharedFolders(email string, etags []string) (*[]byte, *http
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) ListSharedFolderMetadata(sid string, etags []string) (*[]byte, *http.Header, error) {
@@ -602,9 +605,7 @@ func (c *Client) ListSharedFolderMetadata(sid string, etags []string) (*[]byte, 
 	if err != nil {
 		return nil, nil, err
 	}
-
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) CreateSharedFolder(name string) (*[]byte, *http.Header, error) {
@@ -618,8 +619,7 @@ func (c *Client) CreateSharedFolder(name string) (*[]byte, *http.Header, error) 
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // SharedFolder Member calls
@@ -634,8 +634,7 @@ func (c *Client) ListSFMember(id string, etags []string) (*[]byte, *http.Header,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetSFMember(id, email string, etags []string) (*[]byte, *http.Header, error) {
@@ -648,8 +647,7 @@ func (c *Client) GetSFMember(id, email string, etags []string) (*[]byte, *http.H
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) AddSFMember(id, email string, permissions []string) (*[]byte, *http.Header, error) {
@@ -662,7 +660,7 @@ func (c *Client) AddSFMember(id, email string, permissions []string) (*[]byte, *
 	}
 	data, err := json.Marshal(newMember)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, errors.New("Unable to marshal new ShareFolder member")
 	}
 
 	res, err := c.post(link, bytes.NewBuffer(data))
@@ -670,8 +668,7 @@ func (c *Client) AddSFMember(id, email string, permissions []string) (*[]byte, *
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) SetSFMemberPermissions(id, email string, permissions, etags []string) (*[]byte, *http.Header, error) {
@@ -692,8 +689,7 @@ func (c *Client) SetSFMemberPermissions(id, email string, permissions, etags []s
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) RemoveSFMember(id, email string, etags []string) (*[]byte, *http.Header, error) {
@@ -706,8 +702,7 @@ func (c *Client) RemoveSFMember(id, email string, etags []string) (*[]byte, *htt
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // SharedFolder pending member calls
@@ -723,8 +718,7 @@ func (c *Client) ListPendingMembers(sid string, etags []string) (*[]byte,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetPendingMember(id, email string) (*[]byte, *http.Header,
@@ -736,8 +730,7 @@ func (c *Client) GetPendingMember(id, email string) (*[]byte, *http.Header,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // SharedFolder Invitation calls
@@ -762,15 +755,19 @@ func (c *Client) InviteToSharedFolder(sid, email string, permissions []string,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) RemovePendingMember(sid, email string) error {
 	route := strings.Join([]string{"shares", sid, "pending", email}, "/")
 	link := c.getURL(route, "")
+
 	res, err := c.del(link)
-	_, _, err = unpackageResponse(res)
+	defer res.Body.Close()
+
+	if err == nil {
+		_, _, err = unpackageResponse(res)
+	}
 	return err
 }
 
@@ -787,8 +784,7 @@ func (c *Client) ListSFGroups(sid string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // Retrieve information for a group associated with a shared folder
@@ -804,8 +800,7 @@ func (c *Client) GetSFGroups(sid, gid string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // Construct a new group for an existing Shared Folder
@@ -825,30 +820,26 @@ func (c *Client) AddGroupToSharedFolder(sid string, permissions []string) (*[]by
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 // Modify the existing permissions of a group for an existing shared folder
-func (c *Client) SetSFGroupPermissions(sid, gid string, permissions []string) (*SFGroupMember,
-	error) {
+func (c *Client) SetSFGroupPermissions(sid, gid string, permissions []string) (*[]byte, *http.Header, error) {
 	path := strings.Join([]string{"shares", sid, "groups", gid}, "/")
 	link := c.getURL(path, "")
 
 	permsList := PermissionList{Permissions: permissions}
 	data, err := json.Marshal(permsList)
 	if err != nil {
-		return nil, errors.New("Unable to marshal given list of permissions")
+		return nil, nil, errors.New("Unable to marshal given list of permissions")
 	}
 
 	res, err := c.put(link, bytes.NewBuffer(data))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	newGroup := SFGroupMember{}
-	err = GetEntity(res, &newGroup)
-	return &newGroup, err
+	return unpackageResponse(res)
 }
 
 // Remove an existing group from its associated shared folder
@@ -857,7 +848,9 @@ func (c *Client) RemoveSFGroup(sid, gid string) error {
 	link := c.getURL(path, "")
 
 	res, err := c.del(link)
-	_, _, err = unpackageResponse(res)
+	if err == nil {
+		_, _, err = unpackageResponse(res)
+	}
 	return err
 }
 
@@ -873,8 +866,7 @@ func (c *Client) ListDevices(email string) (*[]byte, *http.Header, error) {
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetDeviceMetadata(deviceId string) (*[]byte, *http.Header, error) {
@@ -887,8 +879,7 @@ func (c *Client) GetDeviceMetadata(deviceId string) (*[]byte, *http.Header, erro
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) UpdateDeviceMetadata(deviceName string) (*[]byte, *http.Header, error) {
@@ -909,8 +900,7 @@ func (c *Client) UpdateDeviceMetadata(deviceName string) (*[]byte, *http.Header,
 		return nil, nil, err
 	}
 
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+	return unpackageResponse(res)
 }
 
 func (c *Client) GetDeviceStatus(deviceId string) (*[]byte, *http.Header,
@@ -922,6 +912,6 @@ func (c *Client) GetDeviceStatus(deviceId string) (*[]byte, *http.Header,
 	if err != nil {
 		return nil, nil, err
 	}
-	body, header, err := unpackageResponse(res)
-	return body, header, err
+
+	return unpackageResponse(res)
 }
