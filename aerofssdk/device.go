@@ -3,11 +3,12 @@ package aerofs
 import (
 	"encoding/json"
 	"errors"
+	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 )
 
 // Device, client wrapper
 type DeviceClient struct {
-	APIClient *Client
+	APIClient *api.Client
 	Desc      Device
 }
 
@@ -26,7 +27,7 @@ type DeviceStatus struct {
 }
 
 // Return an existing device client given a deviceId
-func NewDeviceClient(c *Client, deviceId string) (*DeviceClient, error) {
+func NewDeviceClient(c *api.Client, deviceId string) (*DeviceClient, error) {
 	body, _, err := c.GetDeviceMetadata(deviceId)
 	if err != nil {
 		return nil, err

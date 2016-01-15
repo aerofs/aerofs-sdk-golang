@@ -3,10 +3,11 @@ package aerofs
 import (
 	"encoding/json"
 	"errors"
+	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 )
 
 type FolderClient struct {
-	APIClient *Client
+	APIClient *api.Client
 	Desc      Folder
 
 	// OnDemand fields must be explicitly stated in requests to retrieve items
@@ -26,7 +27,7 @@ type Folder struct {
 }
 
 // Return an existing FolderClient given a folderId and on-demand fields
-func GetFolderClient(c *Client, folderId string, fields []string) (*FolderClient, error) {
+func GetFolderClient(c *api.Client, folderId string, fields []string) (*FolderClient, error) {
 	body, header, err := c.GetFolderMetadata(folderId, fields)
 	if err != nil {
 		return nil, err

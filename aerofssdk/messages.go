@@ -1,11 +1,5 @@
 package aerofs
 
-import (
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-)
-
 // Structures used when communicating with an AeroFS Appliance
 
 type File struct {

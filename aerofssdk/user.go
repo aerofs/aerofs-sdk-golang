@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 )
 
 // The User object is used to easily modify backend users assuming
@@ -19,7 +20,7 @@ type userListResponse struct {
 
 // User, Client wrapper
 type UserClient struct {
-	APIClient *Client `json:"-"`
+	APIClient *api.Client `json:"-"`
 	Desc      User
 }
 
@@ -38,7 +39,7 @@ func (u User) String() string {
 }
 
 // Return an existing userClient given an email and client reference
-func GetUserClient(client *Client, email string) (*UserClient, error) {
+func GetUserClient(client *api.Client, email string) (*UserClient, error) {
 	body, _, err := client.GetUser(email)
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func GetUserClient(client *Client, email string) (*UserClient, error) {
 
 // Get a list of Users
 // Note that these users are not tied to the given client
-func ListUsers(client *Client, limit int) (*[]User, error) {
+func ListUsers(client *api.Client, limit int) (*[]User, error) {
 	body, _, err := client.ListUsers(limit, nil, nil)
 	if err != nil {
 		return nil, err
@@ -71,7 +72,7 @@ func ListUsers(client *Client, limit int) (*[]User, error) {
 }
 
 // Create a new user Client and return
-func CreateUserClient(client *Client, email, firstName, lastName string) (*UserClient, error) {
+func CreateUserClient(client *api.Client, email, firstName, lastName string) (*UserClient, error) {
 	body, _, err := client.CreateUser(email, firstName, lastName)
 	if err != nil {
 		return nil, err
