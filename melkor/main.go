@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/aerofs/aerofs-sdk-golang/aerofsapi"
+	sdk "github.com/aerofs/aerofs-sdk-golang/aerofssdk"
 	// context.ClearHandler supposedly needed to prevent memory leak with a
 	// non-Gorilla Mux
 	"github.com/gorilla/context"
@@ -22,9 +23,6 @@ func main() {
 	r.GET("/", arrive)
 	r.GET("/redirect", redirect)
 	r.GET("/tokenization", tokenization)
-	/*	r.GET("/files", func(rw http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-		http.FileServer(http.Dir("/")).ServeHTTP(rw, req)
-	})*/
 
 	http.ListenAndServe("localhost:13337", context.ClearHandler(r))
 }
@@ -73,6 +71,7 @@ func tokenization(rw http.ResponseWriter, req *http.Request, p httprouter.Params
 		fmt.Println("%s : %s", a, e)
 	}
 	str := fmt.Sprintf("%v", req.URL.Query())
+	fmt.Println(str)
 	ac, err := aerofsapi.NewAuthClient("appconfig.json",
 		"http://localhost:13337/tokenization", "uniqueState", []string{"files.read",
 			"files.write", "user.read", "user.write", "user.password"})
@@ -83,7 +82,11 @@ func tokenization(rw http.ResponseWriter, req *http.Request, p httprouter.Params
 		fmt.Println("Unable to get correct access token")
 	}
 	fmt.Println("Token is", token)
-	rw.Write([]byte(str + " TOKEN " + token))
+	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
+	users, _ := sdk.ListUsers(a, 100)
+	devices, _ := sdk.ListDevices(a, "daniel.cardoza@aerofs.com")
+	us := fmt.Sprintf("%v %v", *users, *devices)
+	rw.Write([]byte(us))
 }
 
 func test_1(rw http.ResponseWriter, req *http.Request, p httprouter.Params) {
