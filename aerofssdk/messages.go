@@ -1,4 +1,4 @@
-package aerofs
+package aerofssdk
 
 // Structures used when communicating with an AeroFS Appliance
 
@@ -31,13 +31,6 @@ type SharedFolder struct {
 	Groups     []SFGroupMember   `json:"groups,omitempty"`
 	Pending    []SFPendingMember `json:"pending,omitempty"`
 	Permission []string          `json:"caller_effective_permissions,omitempty"`
-}
-
-type SFMember struct {
-	Email       string   `json:"email"`
-	FirstName   string   `json:"first_name"`
-	LastName    string   `json:"last_name"`
-	Permissions []string `json:"permissions"`
 }
 
 type SFGroupMember struct {
@@ -78,15 +71,4 @@ type Invitation struct {
 	Name        string   `json:"shared_name"`
 	Inviter     string   `json:"invited_by"`
 	Permissions []string `json:"permissions"`
-}
-
-type PermissionList struct {
-	Permissions []string `json:"permissions"`
-}
-
-// Response specific structures
-
-type ListUserResponse struct {
-	HasMore bool   `json:"has_more"`
-	Users   []User `json:"data"`
 }

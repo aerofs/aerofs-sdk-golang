@@ -16,15 +16,15 @@ import (
 
 // User Related Calls
 
-func (c *Client) ListUsers(limit int, after, before *int) (*[]byte, *http.Header, error) {
+func (c *Client) ListUsers(limit int, after, before *string) (*[]byte, *http.Header, error) {
 	route := "users"
 	query := url.Values{}
 	query.Set("limit", strconv.Itoa(limit))
 	if before != nil {
-		query.Set("before", strconv.Itoa(*before))
+		query.Set("before", *before)
 	}
 	if after != nil {
-		query.Set("after", strconv.Itoa(*after))
+		query.Set("after", *after)
 	}
 
 	link := c.getURL(route, query.Encode())
@@ -85,6 +85,8 @@ func (c *Client) UpdateUser(email, firstName, lastName string) (*[]byte,
 	}
 
 	res, err := c.put(link, bytes.NewBuffer(data))
+	defer res.Body.Close()
+
 	return unpackageResponse(res)
 }
 
@@ -92,7 +94,9 @@ func (c *Client) DeleteUser(email string) error {
 	route := strings.Join([]string{"users", email}, "/")
 	link := c.getURL(route, "")
 
-	_, err := c.del(link)
+	res, err := c.del(link)
+	res.Body.Close()
+
 	return err
 }
 
@@ -748,9 +752,12 @@ func (c *Client) CreateSharedFolder(name string) (*[]byte, *http.Header, error) 
 
 // SharedFolder Member calls
 
-func (c *Client) ListSFMember(id string, etags []string) (*[]byte, *http.Header, error) {
+func (c *Client) ListSFMembers(id string, etags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"shares", id, "members"}, "/")
-	newHeader := http.Header{"If-None-Match": etags}
+	newHeader := http.Header{}
+	if len(etags) > 0 {
+		newHeader = http.Header{"If-None-Match": etags}
+	}
 	link := c.getURL(route, "")
 
 	res, err := c.request("GET", link, &newHeader, nil)
@@ -763,8 +770,11 @@ func (c *Client) ListSFMember(id string, etags []string) (*[]byte, *http.Header,
 
 func (c *Client) GetSFMember(id, email string, etags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"shares", id, "members", email}, "/")
-	newHeader := http.Header{"If-None-Match": etags}
 	link := c.getURL(route, "")
+	newHeader := http.Header{}
+	if len(etags) > 0 {
+		newHeader = http.Header{"If-None-Match": etags}
+	}
 
 	res, err := c.request("GET", link, &newHeader, nil)
 	if err != nil {

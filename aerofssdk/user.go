@@ -1,4 +1,4 @@
-package aerofs
+package aerofssdk
 
 import (
 	"encoding/json"

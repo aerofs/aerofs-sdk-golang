@@ -1,4 +1,4 @@
-package aerofs
+package aerofssdk
 
 import (
 	"encoding/json"
@@ -26,8 +26,23 @@ type DeviceStatus struct {
 	LastSeen string `json:"last_seen"`
 }
 
+// Retrieve a list of existing Device descriptors
+func ListDevices(c *api.Client, limit int, after, before *string) (*[]Device, error) {
+	body, _, err := c.ListUsers(limit, after, before)
+	if err != nil {
+		return nil, err
+	}
+
+	devices := []Device{}
+	err = json.Unmarshal(*body, &devices)
+	if err != nil {
+		return nil, errors.New("Unable to demarshal list of devices")
+	}
+	return &devices, err
+}
+
 // Return an existing device client given a deviceId
-func NewDeviceClient(c *api.Client, deviceId string) (*DeviceClient, error) {
+func GetDeviceClient(c *api.Client, deviceId string) (*DeviceClient, error) {
 	body, _, err := c.GetDeviceMetadata(deviceId)
 	if err != nil {
 		return nil, err
