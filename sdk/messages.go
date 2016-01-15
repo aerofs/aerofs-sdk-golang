@@ -8,26 +8,6 @@ import (
 
 // Structures used when communicating with an AeroFS Appliance
 
-// Contains the necessary information for retrieving an access Token
-type AuthConfig struct {
-	// Unique AeroFS Application ID, Secret
-	Id     string
-	Secret string
-
-	// Redirect URL when retrieving a user authorization code
-	Redirect string
-
-	// The requested scopes for a user, implicit in their generated OAuth token
-	Scopes []string
-}
-
-type Access struct {
-	Token      string `json:"access_token"`
-	TokenType  string `json:"token_type"`
-	ExpireTime int    `json:"expires_in"`
-	Scopes     string `json:"scope"`
-}
-
 type File struct {
 	Id           string     `json:"id"`
 	Name         string     `json:"name"`
@@ -115,14 +95,4 @@ type PermissionList struct {
 type ListUserResponse struct {
 	HasMore bool   `json:"has_more"`
 	Users   []User `json:"data"`
-}
-
-// Unmarshalls data from an HTTP response given a response struct
-func GetEntity(res *http.Response, entity interface{}) error {
-	data, err := ioutil.ReadAll(res.Body)
-	//	fmt.Println(string(data))
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(data, &entity)
 }

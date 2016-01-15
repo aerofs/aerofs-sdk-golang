@@ -1,4 +1,4 @@
-package aerofs
+package aerofsapi
 
 // This is the entrypoint class for making connections with an AeroFS Appliance
 // A received OAuth Token is required for authentication
@@ -11,6 +11,22 @@ import (
 	"strings"
 )
 
+// Application Specific Information
+type AuthConfig struct {
+	Id       string
+	Secret   string
+	Redirect string
+	Scopes   []string
+}
+
+type Access struct {
+	Token      string `json:"access_token"`
+	TokenType  string `json:"token_type"`
+	ExpireTime int    `json:"expires_in"`
+	Scopes     string `json:"scope"`
+}
+
+// Authorization Interface
 type AuthClient struct {
 	// Parameters required for network requests
 	Config AuthConfig

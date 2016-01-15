@@ -1,4 +1,4 @@
-package aerofs
+package aerofsapi
 
 // This is the entrypoint class for making connections with an AeroFS Appliance
 // A received OAuth Token is required for authentication
@@ -9,6 +9,7 @@ package aerofs
 //    - for the API, simple return a buffer of the body, the Header map and an
 //      error
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -179,4 +180,13 @@ func (c *Client) request(req, url string, options *http.Header, buffer io.Reader
 	fmt.Println(request.Header)
 	hClient := &http.Client{}
 	return hClient.Do(request)
+}
+
+// Unmarshalls data from an HTTP Response into a given entity
+func GetEntity(res *http.Response, entity interface{}) error {
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, &entity)
 }

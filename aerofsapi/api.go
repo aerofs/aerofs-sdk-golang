@@ -1,4 +1,4 @@
-package aerofs
+package aerofsapi
 
 import (
 	"bytes"
@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 )
+
+// This file maps all routes exposed on the AeroFS API
 
 // User Related Calls
 
@@ -950,7 +952,9 @@ func (c *Client) SetSFGroupPermissions(sid, gid string, permissions []string) (*
 	path := strings.Join([]string{"shares", sid, "groups", gid}, "/")
 	link := c.getURL(path, "")
 
-	permsList := PermissionList{Permissions: permissions}
+	permsList := map[string][]string{
+		"permissions": permissions,
+	}
 	data, err := json.Marshal(permsList)
 	if err != nil {
 		return nil, nil, errors.New("Unable to marshal given list of permissions")
@@ -989,17 +993,6 @@ func (c *Client) _ListDevices(email string) (*[]byte, *http.Header, error) {
 	}
 
 	return unpackageResponse(res)
-}
-
-func (c *Client) ListDevices(email string) (*[]Device, error) {
-	body, _, err := c._ListDevices(email)
-	if err != nil {
-		return nil, err
-	}
-
-	devices := []Device{}
-	err = json.Unmarshal(*body, &devices)
-	return &devices, err
 }
 
 func (c *Client) GetDeviceMetadata(deviceId string) (*[]byte, *http.Header, error) {
