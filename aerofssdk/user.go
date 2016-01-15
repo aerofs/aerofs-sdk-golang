@@ -63,12 +63,12 @@ func ListUsers(client *api.Client, limit int) (*[]User, error) {
 		return nil, err
 	}
 
-	users := []User{}
-	err = json.Unmarshal(*body, &users)
+	userResp := userListResponse{}
+	err = json.Unmarshal(*body, &userResp)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal a retrieved list of users")
 	}
-	return &users, nil
+	return &userResp.Users, nil
 }
 
 // Create a new user Client and return

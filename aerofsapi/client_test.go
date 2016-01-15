@@ -12,17 +12,18 @@ import (
 // These unit tests test against a local AeroFS Test Appliance instance.
 // To execute these tests, tokens for OAuth 2.0 authentication must be provided
 // This can be done manually, by creating a 3rd-Party Application, and using the
-// AuthClient to generate corresponding tokens
+// AuthClient to generate corresponding tokens. These constants are exported for
+// the SDK tests
 // TODO : Implement a teardown method
 const (
 	// [files.read,files.write,acl.read,acl.write,acl.invitations,user.read,user.write]
-	userToken = "2a09580d057348d9a1382b866389b1ae"
+	UserToken = "2a09580d057348d9a1382b866389b1ae"
 
 	// [files.read,files.write,acl.read,acl.write,acl.invitations,user.read,user.write,organization.admin]
-	adminToken = "3d2a1005a27a4115946fe308eb30785f"
+	AdminToken = "3d2a1005a27a4115946fe308eb30785f"
 
 	// The default Hostname for the local test-appliance
-	appHost = "share.syncfs.com"
+	AppHost = "share.syncfs.com"
 )
 
 // Perform test teardown and setup
@@ -33,7 +34,7 @@ func TestMain(m *testing.M) {
 
 // Create a new APIClient
 func TestAPICreateClient(t *testing.T) {
-	_, err := NewClient(adminToken, appHost)
+	_, err := NewClient(AdminToken, AppHost)
 	if err != nil {
 		t.Fatal("Unable to create API client for testing")
 	}
@@ -43,7 +44,7 @@ func TestAPICreateClient(t *testing.T) {
 
 // Create a new User
 func TestAPI_CreateUser(t *testing.T) {
-	c, _ := NewClient(adminToken, appHost)
+	c, _ := NewClient(AdminToken, AppHost)
 	email := fmt.Sprintf("test_email%d@moria.com", rand.Intn(10000))
 	firstName := "Gimli"
 	lastName := "Son of Gloin"
@@ -62,7 +63,7 @@ func TestAPI_CreateUser(t *testing.T) {
 
 // List a set of Users
 func TestAPI_ListUsers(t *testing.T) {
-	c, _ := NewClient(adminToken, appHost)
+	c, _ := NewClient(AdminToken, AppHost)
 	b, _, e := c.ListUsers(100, nil, nil)
 	if e != nil {
 		t.Log("Error when attempting to list users")
@@ -78,7 +79,7 @@ func TestAPI_ListUsers(t *testing.T) {
 // Update an existing user
 // Create a user, update their credentials and ensure they match
 func TestAPI_UpdateUser(t *testing.T) {
-	c, _ := NewClient(adminToken, appHost)
+	c, _ := NewClient(AdminToken, AppHost)
 
 	email := fmt.Sprintf("test_email%d@moria.com", rand.Intn(10000))
 	origUser := User{email, "Gimli", "Son of Gloin", []SharedFolder{}, []Invitation{}}
@@ -112,8 +113,8 @@ func TestAPI_UpdateUser(t *testing.T) {
 
 // Retrieve an uploadId, fileSize for an existing File
 func TestAPI_GetUploadId(t *testing.T) {
-	c, _ := NewClient(userToken, appHost)
-	data, _, err := c.ListFolderChildren("root")
+	c, _ := NewClient(UserToken, AppHost)
+	data, _, err := c.GetFolderChildren("root")
 	if err != nil {
 		t.Fatal("Error retrieving list of root Children")
 	}
@@ -176,13 +177,13 @@ func TestB(t *testing.T) {
 	fmt.Println(string(*b))
 	fmt.Println(h)
 
-	c.SetToken(userToken)
+	c.SetToken(UserToken)
 	e = c.DeleteInvitee("danielcardoza@gmail.com")
 	fmt.Println("DeleteInvitee")
 	fmt.Println(e)
 
-	c.SetToken(adminToken)
-	c.SetToken(userToken)
+	c.SetToken(AdminToken)
+	c.SetToken(UserToken)
 
 	// Get root folder data
 	b, h, err = c.GetFolderMetadata("root", []string{"children"})
