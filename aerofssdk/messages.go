@@ -2,18 +2,6 @@ package aerofssdk
 
 // Structures used when communicating with an AeroFS Appliance
 
-type File struct {
-	Id           string     `json:"id"`
-	Name         string     `json:"name"`
-	Parent       string     `json:"parent"`
-	LastModified string     `json:"last_modified"`
-	Size         int        `json:"size"`
-	Mime         string     `json:"mime_type"`
-	Etag         string     `json:"etag"`
-	Path         ParentPath `json:"path"`
-	ContentState string     `json:"content_state"`
-}
-
 type ParentPath struct {
 	Folders []Folder `json:"folders"`
 }

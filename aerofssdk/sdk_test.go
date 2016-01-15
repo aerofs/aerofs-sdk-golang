@@ -130,3 +130,31 @@ func TestListUsers(t *testing.T) {
 	}
 
 }
+
+func TestGetFolder(t *testing.T) {
+	c, _ := api.NewClient(UserToken, "share.syncfs.com")
+	f, e := GetFolderClient(c, "root", []string{"path", "children"})
+	if e != nil {
+		t.Fatalf("Unable to retrieve a FolderClient : %s", e)
+	}
+
+	f.LoadChildren()
+	f.LoadMetadata()
+	t.Log(*f)
+}
+
+func TestGetFile(t *testing.T) {
+	c, _ := api.NewClient(UserToken, "share.syncfs.com")
+	fileId := "568e2b4ca47d340d5cb9fcb85c07f2a04e86ed3b4c0d4d43ac3a04a076025f16"
+	f, e := GetFileClient(c, fileId, []string{"path", "children"})
+	if e != nil {
+		t.Fatalf("Unable to retrieve a FileCLient : %s", e)
+	}
+	t.Log(*f)
+	f.LoadPath()
+	t.Log(*f)
+}
+
+func TestMoveFile(t *testing.T) {
+
+}

@@ -358,7 +358,10 @@ func (c *Client) GetFileMetadata(fileId string, fields []string) (*[]byte,
 	query := url.Values{"fields": fields}
 	link := c.getURL(route, query.Encode())
 
-	res, err := c.get(link)
+	newHeader := http.Header{}
+	newHeader.Set("Content-Type", "application/octet-stream")
+
+	res, err := c.request("GET", link, &newHeader, nil)
 	defer res.Body.Close()
 	if err != nil {
 		return nil, nil, err

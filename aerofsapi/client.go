@@ -11,7 +11,6 @@ package aerofsapi
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -176,8 +175,13 @@ func (c *Client) request(req, url string, options *http.Header, buffer io.Reader
 		request.Header.Del("Content-Type")
 	}
 
-	fmt.Println(url)
-	fmt.Println(request.Header)
+	// TODO : Add extra field to signal serializing
+	// Note : Determine if this has actual effect
+	contentType := options.Get("Content-Type")
+	if options.Get("Content-Type") != "" {
+		request.Header.Set("Content-Type", contentType)
+	}
+
 	hClient := &http.Client{}
 	return hClient.Do(request)
 }

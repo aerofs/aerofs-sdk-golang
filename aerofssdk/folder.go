@@ -22,7 +22,7 @@ type Folder struct {
 	IsShared  bool       `json:"is_shared"`
 	Sid       string     `json:"sid"`
 	Path      ParentPath `json:"path"`
-	ChildList Children   `json:"children}`
+	ChildList Children   `json:"children"`
 	Etag      string
 }
 
@@ -94,6 +94,7 @@ func (f *FolderClient) Load() error {
 	// Perform in a single call by retrieving all fields by setting the On-Demand
 	// fields. This only performs one request vs. 3 by calling
 	// load{Metadata,Path,Children}
+	// TODO : does this work vs. LoadPath, LoadMetadata
 	oldFields := f.OnDemand
 	f.OnDemand = []string{"path", "children"}
 	err := f.LoadMetadata()
