@@ -150,6 +150,12 @@ func TestGetFile(t *testing.T) {
 	if e != nil {
 		t.Fatalf("Unable to retrieve a FileCLient : %s", e)
 	}
+	b, e := f.GetContent()
+	if e != nil {
+		t.Fatalf("Unable to retrieve file contents : %s", e)
+	}
+	t.Log(len(*b))
+	t.Log(string(*b))
 	t.Log(*f)
 	f.LoadPath()
 	t.Log(*f)

@@ -384,17 +384,14 @@ func (c *Client) GetFilePath(fileId string) (*[]byte, *http.Header, error) {
 }
 
 //
-func (c *Client) GetFileContent(fileId, rangeEtag string, fileRanges, matchEtags []string) (*[]byte, *http.Header, error) {
+func (c *Client) GetFileContent(fileId, rangeEtag string, startIndex, endIndex int, matchEtags []string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"files", fileId, "content"}, "/")
 	link := c.getURL(route, "")
 
 	// Construct header
+	byteRange := fmt.Sprintf("bytes=%d-%d", startIndex, endIndex)
 	newHeader := http.Header{}
-	if len(fileRanges) > 0 {
-		for _, v := range fileRanges {
-			newHeader.Add("Range", v)
-		}
-	}
+	newHeader.Add("Range", byteRange)
 
 	if rangeEtag != "" {
 		newHeader.Set("If-Range", rangeEtag)

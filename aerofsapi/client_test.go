@@ -142,8 +142,7 @@ func TestAPI_GetUploadId(t *testing.T) {
 	t.Logf("UploadId for appconfig.json is %s", uploadId)
 }
 
-// Verify a user is created and then Deleted
-func TestAPI_CreateDeleteUser(t *testing.T) {
+func TestAPI_GetFileContent(t *testing.T) {
 
 }
 

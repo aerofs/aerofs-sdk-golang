@@ -41,7 +41,7 @@ func GetFileClient(c *api.Client, fileId string, fields []string) (*FileClient, 
 	return &f, nil
 }
 
-//
+// Reload the ParentPath of the File
 func (f *FileClient) LoadPath() error {
 	body, header, err := f.APIClient.GetFilePath(f.Desc.Id)
 	if err != nil {
@@ -70,4 +70,15 @@ func (f *FileClient) Move(newName, parentId string) error {
 	}
 	f.Desc.Etag = header.Get("Etag")
 	return nil
+}
+
+func (f *FileClient) GetContent() (*[]byte, error) {
+	body, header, err := f.APIClient.GetFileContent(f.Desc.Id, f.Desc.Etag, 0,
+		f.Desc.Size-1, []string{})
+	if err != nil {
+		return nil, err
+	}
+
+	f.Desc.Etag = header.Get("ETag")
+	return body, nil
 }
