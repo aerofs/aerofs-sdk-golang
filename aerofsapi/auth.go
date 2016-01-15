@@ -97,8 +97,6 @@ func (auth *AuthClient) GetAuthorizationUrl() string {
 
 // Retrieve User OAuth token, scopes given an Authorization code
 func (auth *AuthClient) GetAccessToken(code string) (string, []string, error) {
-	// Regular API requests are 'application/json' but authorization uses
-	// Urlencoding
 	v := url.Values{}
 	v.Set("grant_type", "authorization_code")
 	v.Set("code", code)

@@ -1,0 +1,1 @@
+all : ;go build *.go
