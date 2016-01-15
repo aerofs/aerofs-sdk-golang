@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 	// context.ClearHandler supposedly needed to prevent memory leak with a
 	// non-Gorilla Mux
-	"github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
@@ -73,7 +73,17 @@ func tokenization(rw http.ResponseWriter, req *http.Request, p httprouter.Params
 		fmt.Println("%s : %s", a, e)
 	}
 	str := fmt.Sprintf("%v", req.URL.Query())
-	rw.Write([]byte(str))
+	ac, err := aerofsapi.NewAuthClient("appconfig.json",
+		"http://localhost:13337/tokenization", "uniqueState", []string{"files.read",
+			"files.write", "user.read", "user.write", "user.password"})
+	code := req.URL.Query()["code"][0]
+	fmt.Println(code)
+	token, _, err := ac.GetAccessToken(code)
+	if err != nil {
+		fmt.Println("Unable to get correct access token")
+	}
+	fmt.Println("Token is", token)
+	rw.Write([]byte(str + " TOKEN " + token))
 }
 
 func test_1(rw http.ResponseWriter, req *http.Request, p httprouter.Params) {

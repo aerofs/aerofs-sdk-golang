@@ -116,3 +116,18 @@ func (u *UserClient) DisableTwoFactorAuth() error {
 func (u *UserClient) Delete() error {
 	return u.APIClient.DeleteUser(u.Desc.Email)
 }
+
+// Return a list of the user's associated devices
+func (u *UserClient) ListDevices() (*[]Device, error) {
+	body, _, err := u.APIClient.ListDevices(u.Desc.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	devices := []Device{}
+	err = json.Unmarshal(*body, &devices)
+	if err != nil {
+		return nil, errors.New("Unable to unmarshal list of devices")
+	}
+	return &devices, nil
+}

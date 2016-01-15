@@ -65,6 +65,25 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
+// Retrieve a user and then enumerate their devices
+func TestGetUserDevices(t *testing.T) {
+	c, _ := api.NewClient(UserToken, "share.syncfs.com")
+	email := "daniel.cardoza@aerofs.com"
+
+	t.Logf("Retrieving an existing user %s", email)
+	u, e := GetUserClient(c, email)
+	if e != nil {
+		t.Fatalf("Unable to retrieve existing user : %s", email)
+	}
+
+	devs, err := u.ListDevices()
+	if err != nil {
+		t.Fatalf("Unable to list devices : %s", err)
+	}
+
+	t.Log(*devs)
+}
+
 // Create a new user
 func TestCreateUser(t *testing.T) {
 	t.Logf("Creating new user")
@@ -131,6 +150,7 @@ func TestListUsers(t *testing.T) {
 
 }
 
+// Retrieve the root folder for a given user
 func TestGetFolder(t *testing.T) {
 	c, _ := api.NewClient(UserToken, "share.syncfs.com")
 	f, e := GetFolderClient(c, "root", []string{"path", "children"})
@@ -161,6 +181,12 @@ func TestGetFile(t *testing.T) {
 	t.Log(*f)
 }
 
-func TestMoveFile(t *testing.T) {
-
+// List a set of device descriptors given an email
+func TestListDevices(t *testing.T) {
+	c, _ := api.NewClient(UserToken, "share.syncfs.com")
+	d, e := ListDevices(c, "daniel.cardoza@aerofs.com")
+	if e != nil {
+		t.Fatalf("Unable to list devices because of %s", e)
+	}
+	t.Log(*d)
 }

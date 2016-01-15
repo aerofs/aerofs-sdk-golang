@@ -112,6 +112,7 @@ func (auth *AuthClient) GetAccessToken(code string) (string, []string, error) {
 	encoding := "application/x-www-form-urlencoded"
 
 	res, err := http.Post(link.String(), encoding, body)
+	defer res.Body.Close()
 	if err != nil {
 		return "", []string{}, err
 	}

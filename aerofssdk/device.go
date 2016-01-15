@@ -27,8 +27,9 @@ type DeviceStatus struct {
 }
 
 // Retrieve a list of existing Device descriptors
-func ListDevices(c *api.Client, limit int, after, before *string) (*[]Device, error) {
-	body, _, err := c.ListUsers(limit, after, before)
+// TODO : is there a better format for this?
+func ListDevices(c *api.Client, email string) (*[]Device, error) {
+	body, _, err := c.ListDevices(email)
 	if err != nil {
 		return nil, err
 	}

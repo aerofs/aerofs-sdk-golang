@@ -992,7 +992,7 @@ func (c *Client) RemoveSFGroup(sid, gid string) error {
 
 // Device specific API Calls
 
-func (c *Client) _ListDevices(email string) (*[]byte, *http.Header, error) {
+func (c *Client) ListDevices(email string) (*[]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "devices"}, "/")
 	link := c.getURL(route, "")
 
