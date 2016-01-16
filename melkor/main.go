@@ -87,6 +87,34 @@ func tokenization(rw http.ResponseWriter, req *http.Request, p httprouter.Params
 	devices, _ := sdk.ListDevices(a, "daniel.cardoza@aerofs.com")
 	us := fmt.Sprintf("%v %v", *users, *devices)
 	rw.Write([]byte(us))
+
+	file, err := sdk.GetFileClient(a,
+		"568e2b4ca47d340d5cb9fcb85c07f2a04e86ed3b4c0d4d43ac3a04a076025f16", []string{})
+	if err != nil {
+		fmt.Printf("Bad thing happened\n")
+		http.Error(rw, err.Error(), 500)
+		return
+	}
+
+	content, err := file.GetContent()
+	if err != nil {
+		fmt.Printf("Bad thing happened\n")
+		http.Error(rw, err.Error(), 500)
+		return
+	}
+	rw.Write(*content)
+	folder, err := sdk.GetFolderClient(a, "root", []string{})
+	if err != nil {
+		fmt.Printf("Bad thing happened\n")
+		http.Error(rw, err.Error(), 500)
+		return
+	}
+
+	folder.LoadPath()
+	folder.LoadChildren()
+	fol := fmt.Sprintf("%v", folder.Desc)
+	f := fmt.Sprintf("%v", file.Desc)
+	rw.Write([]byte(f + "\n\n\n" + fol))
 }
 
 func test_1(rw http.ResponseWriter, req *http.Request, p httprouter.Params) {

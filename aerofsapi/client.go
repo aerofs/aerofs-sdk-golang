@@ -2,12 +2,6 @@ package aerofsapi
 
 // This is the entrypoint class for making connections with an AeroFS Appliance
 // A received OAuth Token is required for authentication
-// TODO :
-//  - reformat the Path construction per each URL object to remove extraneous
-//  code
-//  - Refactor into a rest API and then SDK
-//    - for the API, simple return a buffer of the body, the Header map and an
-//      error
 import (
 	"encoding/json"
 	"errors"
