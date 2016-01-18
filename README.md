@@ -4,7 +4,7 @@ composed of two packages:
 * **aerofsapi** -  Map the AeroFS API spec to individual calls
   * Supports all routes documented by the AeroFS API v1.3 Specification
 * **aerofssdk** - Higher-level interface to the API
-  * Supports the creation of File, Folder, Group, GroupMember, SharedFolderMember and User objects
+  * Supports the creation of File, Folder, Group, GroupMember, SharedFolder, SharedFolderMember and User objects
 
 ### Installation
 ```sh
