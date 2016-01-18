@@ -32,10 +32,16 @@ func main() {
 	resHandler := http.FileServer(http.Dir("./resources/"))
 	http.Handle("/resources/", http.StripPrefix("/resources/", resHandler))
 
+	// Authentication
 	router.HandleFunc("/tokenization", tokenization).Methods("GET")
 	router.HandleFunc("/", defaultHandler).Methods("GET")
 	router.HandleFunc("/login", loginEntryHandler).Methods("GET")
 	router.HandleFunc("/login", loginSubmitHandler).Methods("POST")
+
+	// View Pages
+	router.HandleFunc("/devices", yourDevicesHandler).Methods("GET")
+	router.HandleFunc("/files", yourFilesHandler).Methods("GET")
+	router.HandleFunc("/totalusers", totalUsersHandler).Methods("GET")
 	http.Handle("/", router)
 
 	http.ListenAndServe(hostName, nil)

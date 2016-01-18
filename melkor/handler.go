@@ -70,6 +70,75 @@ func MiscHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Print("Leaving Misc Handler")
 }
 
+// Enumerate the users devices
+func yourDevicesHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	token := session.Values["token"].(string)
+	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
+	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
+	devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
+	logger.Print(*devices)
+	t, err := template.ParseFiles("templates/userDevices.tmpl")
+	logger.Print("Attempting to parse user devices page")
+	if err != nil {
+		logger.Println("Unable to retrieve template file")
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	t.Execute(w, devices)
+	session.Save(r, w)
+}
+
+// Enumerate the user's files
+func totalUsersHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	token := session.Values["token"].(string)
+	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
+	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
+	devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
+	logger.Print(*devices)
+	t, err := template.ParseFiles("templates/userDevices.tmpl")
+	logger.Print("Attempting to parse user devices page")
+	if err != nil {
+		logger.Println("Unable to retrieve template file")
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	t.Execute(w, devices)
+	session.Save(r, w)
+}
+
+// Enumerate the total number of users on the system
+func yourFilesHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "session-name")
+	token := session.Values["token"].(string)
+
+	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
+	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
+
+	logger.Print("Attempting to parse user files page")
+	t, err := template.ParseFiles("templates/userFiles.tmpl")
+	if err != nil {
+		logger.Println("Unable to retrieve template file")
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	// Retrieve children of root folder
+	folder, err := sdk.GetFolderClient(a, "root", []string{})
+	if err != nil {
+		logger.Println("Unable to retrieve file client for file.")
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	folder.LoadPath()
+	folder.LoadChildren()
+	logger.Print(folder.Desc.ChildList.Files)
+	t.Execute(w, folder.Desc)
+	session.Save(r, w)
+}
+
 // Receive a Token after user accepts permissions
 func tokenization(rw http.ResponseWriter, req *http.Request) {
 
@@ -88,6 +157,7 @@ func tokenization(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	session.Values["token"] = token
+	session.Save(req, rw)
 	logger.Printf("%v", session.Values)
 
 	// Make an API Client to use with the SDK
