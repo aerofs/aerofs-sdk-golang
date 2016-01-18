@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 	sdk "github.com/aerofs/aerofs-sdk-golang/aerofssdk"
 	"github.com/gorilla/sessions"
@@ -74,10 +73,12 @@ func MiscHandler(w http.ResponseWriter, r *http.Request) {
 func yourDevicesHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session-name")
 	token := session.Values["token"].(string)
+
 	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
 	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
 	devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
 	logger.Print(*devices)
+
 	t, err := template.ParseFiles("templates/userDevices.tmpl")
 	logger.Print("Attempting to parse user devices page")
 	if err != nil {
@@ -93,18 +94,21 @@ func yourDevicesHandler(w http.ResponseWriter, r *http.Request) {
 func totalUsersHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session-name")
 	token := session.Values["token"].(string)
+
 	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
 	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
-	devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
-	logger.Print(*devices)
-	t, err := template.ParseFiles("templates/userDevices.tmpl")
-	logger.Print("Attempting to parse user devices page")
+
+	users, _ := sdk.ListUsers(a, 100)
+	logger.Print(*users)
+
+	t, err := template.ParseFiles("templates/totalUsers.tmpl")
+	logger.Print("Attempting to parse total users page")
 	if err != nil {
 		logger.Println("Unable to retrieve template file")
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	t.Execute(w, devices)
+	t.Execute(w, users)
 	session.Save(r, w)
 }
 
@@ -135,6 +139,7 @@ func yourFilesHandler(w http.ResponseWriter, r *http.Request) {
 	folder.LoadPath()
 	folder.LoadChildren()
 	logger.Print(folder.Desc.ChildList.Files)
+	logger.Print(folder.Desc.ChildList.Folders)
 	t.Execute(w, folder.Desc)
 	session.Save(r, w)
 }
@@ -150,7 +155,8 @@ func tokenization(rw http.ResponseWriter, req *http.Request) {
 	// disregard state
 	code := req.URL.Query().Get("code")
 	token, _, err := ac.GetAccessToken(code)
-	logger.Printf("USER : Email : %s | Code : %s | Token : %s",
+	logger.Print("New activated user ...")
+	logger.Printf("\tEmail : %s | Code : %s | Token : %s",
 		session.Values["email"], code, token)
 	if err != nil {
 		logger.Println("Unable to get correct access token")
@@ -158,46 +164,48 @@ func tokenization(rw http.ResponseWriter, req *http.Request) {
 
 	session.Values["token"] = token
 	session.Save(req, rw)
-	logger.Printf("%v", session.Values)
+	http.Redirect(rw, req, "http://localhost:13337/devices", 301)
+	/*
+		logger.Printf("%v", session.Values)
 
-	// Make an API Client to use with the SDK
-	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
+		// Make an API Client to use with the SDK
+		a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
 
-	// Printer list of users, user's devices
-	users, _ := sdk.ListUsers(a, 100)
-	devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
-	us := fmt.Sprintf("%v %v", *users, *devices)
-	rw.Write([]byte(us))
+		// Printer list of users, user's devices
+		users, _ := sdk.ListUsers(a, 100)
+		devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
+		us := fmt.Sprintf("%v %v", *users, *devices)
+		rw.Write([]byte(us))
 
-	// Retrieve appconfig.json file and print it
-	file, err := sdk.GetFileClient(a,
-		"568e2b4ca47d340d5cb9fcb85c07f2a04e86ed3b4c0d4d43ac3a04a076025f16",
-		[]string{})
-	if err != nil {
-		logger.Println("Unable to retrieve file client for file.")
-		http.Error(rw, err.Error(), 500)
-		return
-	}
+		// Retrieve appconfig.json file and print it
+		file, err := sdk.GetFileClient(a,
+			"568e2b4ca47d340d5cb9fcb85c07f2a04e86ed3b4c0d4d43ac3a04a076025f16",
+			[]string{})
+		if err != nil {
+			logger.Println("Unable to retrieve file client for file.")
+			http.Error(rw, err.Error(), 500)
+			return
+		}
 
-	content, err := file.GetContent()
-	if err != nil {
-		logger.Println("Unable to retrieve file content")
-		http.Error(rw, err.Error(), 500)
-		return
-	}
-	rw.Write(*content)
+		content, err := file.GetContent()
+		if err != nil {
+			logger.Println("Unable to retrieve file content")
+			http.Error(rw, err.Error(), 500)
+			return
+		}
+		rw.Write(*content)
 
-	// Retrieve list of files/folders in root
-	folder, err := sdk.GetFolderClient(a, "root", []string{})
-	if err != nil {
-		logger.Println("Unable to retrieve file client for file.")
-		http.Error(rw, err.Error(), 500)
-		return
-	}
+		// Retrieve list of files/folders in root
+		folder, err := sdk.GetFolderClient(a, "root", []string{})
+		if err != nil {
+			logger.Println("Unable to retrieve file client for file.")
+			http.Error(rw, err.Error(), 500)
+			return
+		}
 
-	folder.LoadPath()
-	folder.LoadChildren()
-	fol := fmt.Sprintf("%v", folder.Desc)
-	f := fmt.Sprintf("%v", file.Desc)
-	rw.Write([]byte(f + "\n\n\n" + fol))
+		folder.LoadPath()
+		folder.LoadChildren()
+		fol := fmt.Sprintf("%v", folder.Desc)
+		f := fmt.Sprintf("%v", file.Desc)
+		rw.Write([]byte(f + "\n\n\n" + fol))*/
 }
