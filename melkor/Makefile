@@ -1,1 +1,2 @@
-all : ;go build *.go
+all : 
+	go build -o melkor *.go

@@ -1,94 +1,55 @@
 package main
 
+// The entrypoint for the Melkor webapp demonstrating the AeroFS Golang SDK
+
 import (
 	"fmt"
-	"github.com/aerofs/aerofs-sdk-golang/aerofsapi"
-	sdk "github.com/aerofs/aerofs-sdk-golang/aerofssdk"
-	// context.ClearHandler supposedly needed to prevent memory leak with a
-	// non-Gorilla Mux
-	"github.com/gorilla/context"
-	"github.com/gorilla/sessions"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gorilla/mux"
+	"log"
 	"net/http"
+	"os"
+	"time"
 )
 
-var store = sessions.NewCookieStore([]byte("UNIQUEID"))
+// Global logger
+var logger *log.Logger
 
-// Note that an HTTP Handler is a (HTTP.ResponseWriter, *http.Request)
+const (
+	hostName = "localhost:1337"
+)
+
 func main() {
-	fmt.Println("Main")
-	r := httprouter.New()
-
-	r.GET("/test", test_1)
-	r.GET("/", arrive)
-	r.GET("/redirect", redirect)
-	r.GET("/tokenization", tokenization)
-
-	http.ListenAndServe("localhost:13337", context.ClearHandler(r))
-}
-
-// Handler called when a user arrives
-func arrive(rw http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	fmt.Println("In arrive")
-	session, err := store.Get(req, "ASODASDLASDL")
+	err := initLogger()
 	if err != nil {
-		http.Error(rw, err.Error(), 500)
-		return
+		fmt.Println("Unable to initialize log file")
+		os.Exit(1)
 	}
-	fmt.Println(session)
-	// Set some session values.
-	session.Values["foo"] = "bar"
-	session.Values[42] = 43
-	fmt.Println(session)
-	// Save it before we write to the response/return from the handler.
-	session.Save(req, rw)
-	rw.Write([]byte(fmt.Sprintf(`A session has been generated for you with ID :
-%s`, session.Name())))
+	logger.Print("Melkor beginning startup...")
 
+	// Set Handlers
+	router := mux.NewRouter()
+	router.HandleFunc("/", defaultHandler).Methods("GET")
+	router.HandleFunc("/login", loginHandler).Methods("POST")
+	router.HandleFunc("/{miscellaneous}", MiscHandler).Methods("GET")
+
+	//r.GET("/test", test_1)
+	//r.GET("/", arrive)
+	//r.GET("/redirect", redirect)
+	//r.GET("/tokenization", tokenization)
+	http.ListenAndServe("localhost:1337", router)
 }
 
-// Have a user redirected to AeroFS site to give permissions and so we can get a
-// token back
-func redirect(rw http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	fmt.Println("In redirect writer")
-	ac, err := aerofsapi.NewAuthClient("appconfig.json",
-		"http://localhost:13337/tokenization", "uniqueState", []string{"files.read",
-			"files.write", "user.read", "user.write", "user.password"})
+// Initialize the Global server logger
+func initLogger() error {
+	t := time.Now()
+	logTime := fmt.Sprintf("%d-%d-%d_%d-%d-%d",
+		t.Year(), t.Month(), t.Day(),
+		t.Hour(), t.Minute(), t.Second())
+	logName := fmt.Sprintf("logs/Melkor_Logs_%s", logTime)
+	logFile, err := os.OpenFile(logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 
-	if err != nil {
-		http.Error(rw, err.Error(), 500)
-		return
-	}
+	// Log the file location, time and date
+	logger = log.New(logFile, "", log.LstdFlags|log.Lshortfile)
 
-	aeroUrl := ac.GetAuthorizationUrl()
-	fmt.Println("URL is", aeroUrl)
-	http.Redirect(rw, req, aeroUrl, 301)
-}
-
-// Receive a Token after used accepts permissions
-func tokenization(rw http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	for a, e := range req.URL.Query() {
-		fmt.Println("%s : %s", a, e)
-	}
-	str := fmt.Sprintf("%v", req.URL.Query())
-	fmt.Println(str)
-	ac, err := aerofsapi.NewAuthClient("appconfig.json",
-		"http://localhost:13337/tokenization", "uniqueState", []string{"files.read",
-			"files.write", "user.read", "user.write", "user.password"})
-	code := req.URL.Query()["code"][0]
-	fmt.Println(code)
-	token, _, err := ac.GetAccessToken(code)
-	if err != nil {
-		fmt.Println("Unable to get correct access token")
-	}
-	fmt.Println("Token is", token)
-	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
-	users, _ := sdk.ListUsers(a, 100)
-	devices, _ := sdk.ListDevices(a, "daniel.cardoza@aerofs.com")
-	us := fmt.Sprintf("%v %v", *users, *devices)
-	rw.Write([]byte(us))
-}
-
-func test_1(rw http.ResponseWriter, req *http.Request, p httprouter.Params) {
-	rw.Write([]byte(`This is a test response`))
+	return err
 }
