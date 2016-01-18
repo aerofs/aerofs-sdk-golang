@@ -17,15 +17,18 @@ var logger *log.Logger
 // Server <host>:<port>
 var hostName string
 
+var appConfig string
+
 func main() {
 
 	// Parse CLI arguments
-	if len(os.Args[1:]) != 2 {
-		fmt.Println("Not enough arguments : ./melkor <host> <ip>")
+	if len(os.Args[1:]) != 3 {
+		fmt.Println("Not enough arguments : ./melkor <host> <ip> <appconfig.json>")
 		os.Exit(1)
 	}
 	host := os.Args[1]
 	port := os.Args[2]
+	appConfig = os.Args[3]
 	hostName = fmt.Sprintf("%s:%s", host, port)
 
 	// Initialize logger
@@ -39,6 +42,7 @@ func main() {
 	// Set Handlers
 	router := mux.NewRouter()
 
+	// Static fileserver for css
 	resHandler := http.FileServer(http.Dir("./resources/"))
 	http.Handle("/resources/", http.StripPrefix("/resources/", resHandler))
 
@@ -68,6 +72,7 @@ func initLogger() error {
 	if err != nil {
 		return err
 	}
+
 	// Log the file location, time and date
 	logger = log.New(logFile, "", log.LstdFlags|log.Lshortfile)
 

@@ -49,7 +49,7 @@ func loginSubmitHandler(w http.ResponseWriter, r *http.Request) {
 	session.Values["email"] = r.Form.Get("email")
 
 	// Redirect User to AeroFS Appliance to retrieve Authorization Code
-	ac, err := aerofsapi.NewAuthClient("appconfig.json",
+	ac, err := aerofsapi.NewAuthClient(appConfig,
 		"http://"+hostName+"/tokenization",
 		"uniqueState", []string{"files.read", "files.write", "user.read", "user.write", "user.password"})
 	if err != nil {
@@ -74,7 +74,7 @@ func yourDevicesHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session-name")
 	token := session.Values["token"].(string)
 
-	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
+	ac, err := aerofsapi.NewAuthClient(appConfig, "", "", []string{})
 	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
 	devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
 	logger.Print(*devices)
@@ -95,7 +95,7 @@ func totalUsersHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session-name")
 	token := session.Values["token"].(string)
 
-	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
+	ac, err := aerofsapi.NewAuthClient(appConfig, "", "", []string{})
 	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
 
 	users, _ := sdk.ListUsers(a, 100)
@@ -117,7 +117,7 @@ func yourFilesHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := store.Get(r, "session-name")
 	token := session.Values["token"].(string)
 
-	ac, err := aerofsapi.NewAuthClient("appconfig.json", "", "", []string{})
+	ac, err := aerofsapi.NewAuthClient(appConfig, "", "", []string{})
 	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
 
 	logger.Print("Attempting to parse user files page")
@@ -150,7 +150,7 @@ func tokenization(rw http.ResponseWriter, req *http.Request) {
 
 	// Retrieve session-id so we can store corresponding token with it
 	session, err := store.Get(req, "session-name")
-	ac, err := aerofsapi.NewAuthClient("appconfig.json",
+	ac, err := aerofsapi.NewAuthClient(appConfig,
 		"http://"+hostName+"/tokenization", "uniqueState", []string{})
 
 	// disregard state
