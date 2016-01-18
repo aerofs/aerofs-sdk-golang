@@ -14,11 +14,21 @@ import (
 // Global logger
 var logger *log.Logger
 
-const (
-	hostName = "localhost:13337"
-)
+// Server <host>:<port>
+var hostName string
 
 func main() {
+
+	// Parse CLI arguments
+	if len(os.Args[1:]) != 2 {
+		fmt.Println("Not enough arguments : ./melkor <host> <ip>")
+		os.Exit(1)
+	}
+	host := os.Args[1]
+	port := os.Args[2]
+	hostName = fmt.Sprintf("%s:%s", host, port)
+
+	// Initialize logger
 	err := initLogger()
 	if err != nil {
 		fmt.Println("Unable to initialize log file")

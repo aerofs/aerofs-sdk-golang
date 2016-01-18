@@ -22,7 +22,7 @@ func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	// If the session cookie is present, go to home
 	for _, r := range r.Cookies() {
 		if r.Name == "session-name" {
-			redirect.Path = "home"
+			redirect.Path = "devices"
 			break
 		}
 	}
@@ -50,7 +50,7 @@ func loginSubmitHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Redirect User to AeroFS Appliance to retrieve Authorization Code
 	ac, err := aerofsapi.NewAuthClient("appconfig.json",
-		"http://localhost:13337/tokenization",
+		"http://"+hostName+"/tokenization",
 		"uniqueState", []string{"files.read", "files.write", "user.read", "user.write", "user.password"})
 	if err != nil {
 		http.Error(w, err.Error(), 500)
@@ -145,12 +145,13 @@ func yourFilesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Receive a Token after user accepts permissions
+// Redirect to the devices page
 func tokenization(rw http.ResponseWriter, req *http.Request) {
 
 	// Retrieve session-id so we can store corresponding token with it
 	session, err := store.Get(req, "session-name")
 	ac, err := aerofsapi.NewAuthClient("appconfig.json",
-		"http://localhost:13337/tokenization", "uniqueState", []string{})
+		"http://"+hostName+"/tokenization", "uniqueState", []string{})
 
 	// disregard state
 	code := req.URL.Query().Get("code")
@@ -164,48 +165,5 @@ func tokenization(rw http.ResponseWriter, req *http.Request) {
 
 	session.Values["token"] = token
 	session.Save(req, rw)
-	http.Redirect(rw, req, "http://localhost:13337/devices", 301)
-	/*
-		logger.Printf("%v", session.Values)
-
-		// Make an API Client to use with the SDK
-		a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
-
-		// Printer list of users, user's devices
-		users, _ := sdk.ListUsers(a, 100)
-		devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
-		us := fmt.Sprintf("%v %v", *users, *devices)
-		rw.Write([]byte(us))
-
-		// Retrieve appconfig.json file and print it
-		file, err := sdk.GetFileClient(a,
-			"568e2b4ca47d340d5cb9fcb85c07f2a04e86ed3b4c0d4d43ac3a04a076025f16",
-			[]string{})
-		if err != nil {
-			logger.Println("Unable to retrieve file client for file.")
-			http.Error(rw, err.Error(), 500)
-			return
-		}
-
-		content, err := file.GetContent()
-		if err != nil {
-			logger.Println("Unable to retrieve file content")
-			http.Error(rw, err.Error(), 500)
-			return
-		}
-		rw.Write(*content)
-
-		// Retrieve list of files/folders in root
-		folder, err := sdk.GetFolderClient(a, "root", []string{})
-		if err != nil {
-			logger.Println("Unable to retrieve file client for file.")
-			http.Error(rw, err.Error(), 500)
-			return
-		}
-
-		folder.LoadPath()
-		folder.LoadChildren()
-		fol := fmt.Sprintf("%v", folder.Desc)
-		f := fmt.Sprintf("%v", file.Desc)
-		rw.Write([]byte(f + "\n\n\n" + fol))*/
+	http.Redirect(rw, req, "http://"+hostName+"/devices", 301)
 }
