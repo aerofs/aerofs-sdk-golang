@@ -36,18 +36,6 @@ type SFPendingMember struct {
 	Note        string   `json:"note"`
 }
 
-type Group struct {
-	Id      string        `json:"id"`
-	Name    string        `json:"name"`
-	Members []GroupMember `json:"members"`
-}
-
-type GroupMember struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-}
-
 type Invitee struct {
 	EmailTo    string `json:"email_to"`
 	EmailFrom  string `json:"email_from"`

@@ -7,6 +7,10 @@ import (
 	"net/http"
 )
 
+// An SFMember object represents a member of a shared folder
+// It encapsulates a typical user with added shared-folder permissions and the
+// ID of the shared folder the member belongs to
+
 type SFMemberClient struct {
 	APIClient *api.Client
 	Desc      SFMember
@@ -55,6 +59,8 @@ func GetSFMemberClient(c *api.Client, sid, email string, etags []string) (*SFMem
 	return &sfmClient, nil
 }
 
+// Given a buffer of bytes representing an SFMember Descriptor, load the data
+// into the client
 func (sfm *SFMemberClient) reserialize(buffer *[]byte, header *http.Header) error {
 	err := json.Unmarshal(*buffer, &sfm.Desc)
 	if err != nil {
@@ -76,7 +82,7 @@ func (sfm *SFMemberClient) UpdatePermissions(newPermissions []string) error {
 	return sfm.reserialize(body, header)
 }
 
-// Retrieve configuration from backend
+// Retrieve up to date fields for the SFMember
 func (sfm *SFMemberClient) Load() error {
 	body, header, err := sfm.APIClient.GetSFMember(sfm.Desc.Sid, sfm.Desc.Email,
 		[]string{sfm.Etag})
