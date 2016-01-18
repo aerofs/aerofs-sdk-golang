@@ -47,43 +47,6 @@ func rmUsers() error {
 	return nil
 }
 
-// Test the creation of an existing user given an Email
-func TestGetUser(t *testing.T) {
-	t.Logf("Retrieving Existing user")
-	c, _ := api.NewClient(UserToken, "share.syncfs.com")
-	email := "daniel.cardoza@aerofs.com"
-
-	t.Logf("Retrieving an existing user %s", email)
-	u, e := GetUserClient(c, email)
-
-	if e != nil {
-		t.Log(e)
-		t.Fatalf("Unable to create new user with email %s", email)
-	} else {
-		t.Logf("Successfully created a new user with email %s", email)
-		t.Log(*u)
-	}
-}
-
-// Retrieve a user and then enumerate their devices
-func TestGetUserDevices(t *testing.T) {
-	c, _ := api.NewClient(UserToken, "share.syncfs.com")
-	email := "daniel.cardoza@aerofs.com"
-
-	t.Logf("Retrieving an existing user %s", email)
-	u, e := GetUserClient(c, email)
-	if e != nil {
-		t.Fatalf("Unable to retrieve existing user : %s", email)
-	}
-
-	devs, err := u.ListDevices()
-	if err != nil {
-		t.Fatalf("Unable to list devices : %s", err)
-	}
-
-	t.Log(*devs)
-}
-
 // Create a new user
 func TestCreateUser(t *testing.T) {
 	t.Logf("Creating new user")
@@ -161,32 +124,4 @@ func TestGetFolder(t *testing.T) {
 	f.LoadChildren()
 	f.LoadMetadata()
 	t.Log(*f)
-}
-
-func TestGetFile(t *testing.T) {
-	c, _ := api.NewClient(UserToken, "share.syncfs.com")
-	fileId := "568e2b4ca47d340d5cb9fcb85c07f2a04e86ed3b4c0d4d43ac3a04a076025f16"
-	f, e := GetFileClient(c, fileId, []string{"path", "children"})
-	if e != nil {
-		t.Fatalf("Unable to retrieve a FileCLient : %s", e)
-	}
-	b, e := f.GetContent()
-	if e != nil {
-		t.Fatalf("Unable to retrieve file contents : %s", e)
-	}
-	t.Log(len(*b))
-	t.Log(string(*b))
-	t.Log(*f)
-	f.LoadPath()
-	t.Log(*f)
-}
-
-// List a set of device descriptors given an email
-func TestListDevices(t *testing.T) {
-	c, _ := api.NewClient(UserToken, "share.syncfs.com")
-	d, e := ListDevices(c, "daniel.cardoza@aerofs.com")
-	if e != nil {
-		t.Fatalf("Unable to list devices because of %s", e)
-	}
-	t.Log(*d)
 }
