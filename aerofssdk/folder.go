@@ -6,6 +6,11 @@ import (
 	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 )
 
+// An object representing a folder on the AeroFS appliance
+// Once created, an object can be manually updated to retrieve up to date values
+// from the AeroFS appliance
+
+// Wrapper used to map a folder to an API client
 type FolderClient struct {
 	APIClient *api.Client
 	Desc      Folder
@@ -15,6 +20,7 @@ type FolderClient struct {
 	OnDemand []string
 }
 
+// Folder descriptor
 type Folder struct {
 	Id        string     `json:"id"`
 	Name      string     `json:"name"`
@@ -26,7 +32,7 @@ type Folder struct {
 	Etag      string
 }
 
-// Return an existing FolderClient given a folderId and on-demand fields
+// Return an existing FolderClient given an existing folderId and on-demand fields
 func GetFolderClient(c *api.Client, folderId string, fields []string) (*FolderClient, error) {
 	body, header, err := c.GetFolderMetadata(folderId, fields)
 	if err != nil {
@@ -86,6 +92,7 @@ func (f *FolderClient) LoadMetadata() error {
 		return errors.New("Unable to unmarshal retrieved folder ParentPath")
 	}
 
+	f.Desc.Etag = header.Get("ETag")
 	return nil
 }
 
@@ -122,7 +129,6 @@ func (f *FolderClient) Move(newName, parentId string) error {
 	return nil
 }
 
-// Share a folder
 // Share and then update the folder to retrieve new SID, is_shared value
 func (f *FolderClient) Share() error {
 	err := f.APIClient.ShareFolder(f.Desc.Id)

@@ -50,7 +50,7 @@ type Access struct {
 	Scopes string `json:"scope"`
 }
 
-// Create a new AuthClient from an AeroFS appconfig.Json file
+// Create a new AuthClient from an AeroFS appconfig.json file
 // The appconfig.json only contains the AeroURL and client_{id,secret}
 func NewAuthClient(fileName, redirectUri, state string, scopes []string) (*AuthClient, error) {
 	data, err := ioutil.ReadFile(fileName)

@@ -18,7 +18,7 @@ type userListResponse struct {
 	Users   []User `json:"data"`
 }
 
-// User, Client wrapper
+// Wrapper for a used mapped to a client
 type UserClient struct {
 	APIClient *api.Client `json:"-"`
 	Desc      User
@@ -38,7 +38,7 @@ func (u User) String() string {
 	return fmt.Sprintf("\nEmail : %s\n FN : %s\n LN : %s\n", u.Email, u.FirstName, u.LastName)
 }
 
-// Return an existing userClient given an email and client reference
+// Given an existing user's email, return a client for said user
 func GetUserClient(client *api.Client, email string) (*UserClient, error) {
 	body, _, err := client.GetUser(email)
 	if err != nil {
@@ -55,8 +55,7 @@ func GetUserClient(client *api.Client, email string) (*UserClient, error) {
 	return &u, nil
 }
 
-// Get a list of Users
-// Note that these users are not tied to the given client
+// Get a list of existing user descriptors
 func ListUsers(client *api.Client, limit int) (*[]User, error) {
 	body, _, err := client.ListUsers(limit, nil, nil)
 	if err != nil {
@@ -71,7 +70,7 @@ func ListUsers(client *api.Client, limit int) (*[]User, error) {
 	return &userResp.Users, nil
 }
 
-// Create a new user Client and return
+// Create a new user and return a UserClient tied to the APIClient argument
 func CreateUserClient(client *api.Client, email, firstName, lastName string) (*UserClient, error) {
 	body, _, err := client.CreateUser(email, firstName, lastName)
 	if err != nil {
@@ -117,7 +116,7 @@ func (u *UserClient) Delete() error {
 	return u.APIClient.DeleteUser(u.Desc.Email)
 }
 
-// Return a list of the user's associated devices
+// Return a list of the user's associated device descriptors
 func (u *UserClient) ListDevices() (*[]Device, error) {
 	body, _, err := u.APIClient.ListDevices(u.Desc.Email)
 	if err != nil {
