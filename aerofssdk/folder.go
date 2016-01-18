@@ -82,7 +82,7 @@ func (f *FolderClient) LoadChildren() error {
 
 // Load new Folder metadata from the server
 func (f *FolderClient) LoadMetadata() error {
-	body, _, err := f.APIClient.GetFolderMetadata(f.Desc.Id, f.OnDemand)
+	body, header, err := f.APIClient.GetFolderMetadata(f.Desc.Id, f.OnDemand)
 	if err != nil {
 		return err
 	}
