@@ -9,15 +9,20 @@ import (
 	"testing"
 )
 
-// Constants used for establishing appliance connections
-const (
-	UserToken  = "2a09580d057348d9a1382b866389b1ae"
-	AdminToken = "3d2a1005a27a4115946fe308eb30785f"
-	AppHost    = "share.syncfs.com"
-)
+// Oauth tokens with different permissions
+var UserToken string
+var AdminToken string
 
-// Perform teardown
+// The hostname of the AeroFS Appliance
+var AppHost string
+
 func TestMain(m *testing.M) {
+	// Retrieve connection information
+	UserToken = os.Getenv("USERTOKEN")
+	AdminToken = os.Getenv("ADMINTOKEN")
+	AppHost = os.Getenv("APPHOST")
+
+	// Perform teardown
 	err := rmUsers()
 	if err != nil {
 		os.Exit(1)
@@ -74,10 +79,9 @@ func TestCreateUser(t *testing.T) {
 }
 
 // Update an already existing user
-// Retrieve the user's new credentials and ensure they are updated
 func TestUpdateUser(t *testing.T) {
+	// Create new user
 	c, _ := api.NewClient(AdminToken, "share.syncfs.com")
-
 	email := fmt.Sprintf("melkor.morgoth%d@gmail.com", rand.Intn(10000))
 	firstName := "Melkor"
 	lastName := "Bauglir"
@@ -86,7 +90,7 @@ func TestUpdateUser(t *testing.T) {
 		t.Fatalf("Unable to create new user : %s", e)
 	}
 
-	// Update user {first,last}name
+	// Update created user
 	t.Log(*u)
 	e = u.Update("Eru", "Iluvatar")
 	if e != nil {
@@ -110,7 +114,6 @@ func TestListUsers(t *testing.T) {
 		t.Logf("There are %d users", len(*u))
 		t.Log(*u)
 	}
-
 }
 
 // Retrieve the root folder for a given user

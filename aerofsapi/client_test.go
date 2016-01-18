@@ -14,20 +14,17 @@ import (
 // This can be done manually, by creating a 3rd-Party Application, and using the
 // AuthClient to generate corresponding tokens. These constants are exported for
 // the SDK tests
-// TODO : Implement a teardown method
-const (
-	// [files.read,files.write,acl.read,acl.write,acl.invitations,user.read,user.write]
-	UserToken = "2a09580d057348d9a1382b866389b1ae"
 
-	// [files.read,files.write,acl.read,acl.write,acl.invitations,user.read,user.write,organization.admin]
-	AdminToken = "3d2a1005a27a4115946fe308eb30785f"
-
-	// The default Hostname for the local test-appliance
-	AppHost = "share.syncfs.com"
-)
+var UserToken string
+var AdminToken string
+var AppHost string
 
 // Perform test teardown and setup
 func TestMain(m *testing.M) {
+	UserToken = os.Getenv("USERTOKEN")
+	AdminToken = os.Getenv("ADMINTOKEN")
+	AppHost = os.Getenv("APPHOST")
+
 	rand.Seed(int64(os.Getpid()))
 	os.Exit(m.Run())
 }
@@ -39,8 +36,6 @@ func TestAPICreateClient(t *testing.T) {
 		t.Fatal("Unable to create API client for testing")
 	}
 }
-
-// User Unittests
 
 // Create a new User
 func TestAPI_CreateUser(t *testing.T) {
@@ -137,7 +132,21 @@ func TestAPI_GetUploadId(t *testing.T) {
 	t.Logf("FileId for appconfig.json is %s:%s", fileId, etag)
 	uploadId, err := c.GetFileUploadId(fileId, []string{etag})
 	if err != nil {
-		t.Fatalf("Unable to get file upload id because of %s", err)
+		t.Logf("Unable to get file upload id")
+		t.Fatal(err)
 	}
 	t.Logf("UploadId for appconfig.json is %s", uploadId)
+}
+
+// Create a new user group
+func TestAPI_CreateGroup(t *testing.T) {
+	c, _ := NewClient(AdminToken, AppHost)
+	groupName := fmt.Sprintf("testGroup_%d", rand.Intn(10000))
+
+	body, _, err := c.CreateGroup(groupName)
+	if err != nil {
+		t.Logf("Unable to create new group %s", groupName)
+		t.Fatal(err)
+	}
+	t.Log(string(*body))
 }
