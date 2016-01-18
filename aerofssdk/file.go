@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
+	"io"
 )
 
 type FileClient struct {
@@ -57,6 +58,7 @@ func (f *FileClient) LoadPath() error {
 	return nil
 }
 
+// Move the file to a new parent folder
 func (f *FileClient) Move(newName, parentId string) error {
 	body, header, err := f.APIClient.MoveFile(f.Desc.Id, parentId, newName,
 		[]string{f.Desc.Etag})
@@ -72,6 +74,7 @@ func (f *FileClient) Move(newName, parentId string) error {
 	return nil
 }
 
+// Retrieve the file contents
 func (f *FileClient) GetContent() (*[]byte, error) {
 	body, header, err := f.APIClient.GetFileContent(f.Desc.Id, f.Desc.Etag, 0,
 		f.Desc.Size-1, []string{})
@@ -81,4 +84,15 @@ func (f *FileClient) GetContent() (*[]byte, error) {
 
 	f.Desc.Etag = header.Get("ETag")
 	return body, nil
+}
+
+// Update the existing content of a file
+func (f *FileClient) UploadFile(file io.Reader) error {
+	uploadId, err := f.APIClient.GetFileUploadId(f.Desc.Id, []string{f.Desc.Etag})
+	if err != nil {
+		return errors.New("Unable to retrieve UploadId for file")
+	}
+
+	return f.APIClient.UploadFile(f.Desc.Id, uploadId, file,
+		[]string{f.Desc.Etag})
 }
