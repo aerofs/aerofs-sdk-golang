@@ -13,17 +13,7 @@ type FileClient struct {
 	OnDemand  []string
 }
 
-type File struct {
-	Id           string     `json:"id"`
-	Name         string     `json:"name"`
-	Parent       string     `json:"parent"`
-	LastModified string     `json:"last_modified"`
-	Size         int        `json:"size"`
-	Mime         string     `json:"mime_type"`
-	Etag         string     `json:"etag"`
-	Path         ParentPath `json:"path"`
-	ContentState string     `json:"content_state"`
-}
+type File api.File
 
 // Construct a FileClient given a file identifier and APIClient
 func GetFileClient(c *api.Client, fileId string, fields []string) (*FileClient, error) {
@@ -33,7 +23,7 @@ func GetFileClient(c *api.Client, fileId string, fields []string) (*FileClient, 
 	}
 
 	f := FileClient{APIClient: c, OnDemand: fields}
-	err = json.Unmarshal(*body, &f.Desc)
+	err = json.Unmarshal(body, &f.Desc)
 
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal existing File")
@@ -49,7 +39,7 @@ func (f *FileClient) LoadPath() error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &f.Desc.Path)
+	err = json.Unmarshal(body, &f.Desc.Path)
 	if err != nil {
 		return errors.New("Unable to unmarshal retrieved file ParentPath")
 	}
@@ -66,7 +56,7 @@ func (f *FileClient) Move(newName, parentId string) error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &f.Desc)
+	err = json.Unmarshal(body, &f.Desc)
 	if err != nil {
 		return errors.New("Unable to unmarshal the new File location")
 	}
@@ -75,7 +65,7 @@ func (f *FileClient) Move(newName, parentId string) error {
 }
 
 // Retrieve the file contents
-func (f *FileClient) GetContent() (*[]byte, error) {
+func (f *FileClient) GetContent() ([]byte, error) {
 	body, header, err := f.APIClient.GetFileContent(f.Desc.Id, f.Desc.Etag, 0,
 		f.Desc.Size-1, []string{})
 	if err != nil {

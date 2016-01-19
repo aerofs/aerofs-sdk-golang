@@ -25,13 +25,7 @@ type UserClient struct {
 }
 
 // User descriptor
-type User struct {
-	Email       string         `json:"email"`
-	FirstName   string         `json:"first_name"`
-	LastName    string         `json:"last_name"`
-	Shares      []SharedFolder `json:"shares"`
-	Invitations []Invitation   `json:"invitations"`
-}
+type User api.User
 
 // Custom User print
 func (u User) String() string {
@@ -46,7 +40,7 @@ func GetUserClient(client *api.Client, email string) (*UserClient, error) {
 	}
 
 	u := UserClient{APIClient: client}
-	err = json.Unmarshal(*body, &u.Desc)
+	err = json.Unmarshal(body, &u.Desc)
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New("Unable to unmarshal new User")
@@ -63,7 +57,7 @@ func ListUsers(client *api.Client, limit int) (*[]User, error) {
 	}
 
 	userResp := userListResponse{}
-	err = json.Unmarshal(*body, &userResp)
+	err = json.Unmarshal(body, &userResp)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal a retrieved list of users")
 	}
@@ -78,7 +72,7 @@ func CreateUserClient(client *api.Client, email, firstName, lastName string) (*U
 	}
 
 	u := User{}
-	err = json.Unmarshal(*body, &u)
+	err = json.Unmarshal(body, &u)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal new User")
 	}
@@ -93,7 +87,7 @@ func (u *UserClient) Update(newFirstName, newLastName string) error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &u.Desc)
+	err = json.Unmarshal(body, &u.Desc)
 	if err != nil {
 		return errors.New("Unable to update user")
 	}
@@ -124,7 +118,7 @@ func (u *UserClient) ListDevices() (*[]Device, error) {
 	}
 
 	devices := []Device{}
-	err = json.Unmarshal(*body, &devices)
+	err = json.Unmarshal(body, &devices)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal list of devices")
 	}

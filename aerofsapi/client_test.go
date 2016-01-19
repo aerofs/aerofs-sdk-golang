@@ -6,10 +6,11 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 )
 
-// These unit tests test against a local AeroFS Test Appliance instance.
+// These end-to-end tests run against a local AeroFS Test Appliance instance.
 // To execute these tests, tokens for OAuth 2.0 authentication must be provided
 // This can be done manually, by creating a 3rd-Party Application, and using the
 // AuthClient to generate corresponding tokens. These constants are exported for
@@ -19,11 +20,47 @@ var UserToken string
 var AdminToken string
 var AppHost string
 
+// Teardown Functions
+
+// Remove all users
+func removeUsers() error {
+	c, err := NewClient(AdminToken, AppHost)
+	body, _, err := c.ListUsers(1000, nil, nil)
+	userResp := userListResponse{}
+	err = json.Unmarshal(body, &userResp)
+	if err != nil {
+		fmt.Println("Failed to retrieve a list of users")
+		return err
+	}
+
+	// Assume <handle>@aerofs.com users are not deleted
+	// This ensures we do not delete users whose tokens we have
+	// TODO : Should this be true for deployments too?
+	for _, u := range userResp.Users {
+		if !strings.Contains(u.Email, "aerofs.com") {
+			err = c.DeleteUser(u.Email)
+			if err != nil {
+				fmt.Println("Unable to delete user %s", u.Email)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 // Perform test teardown and setup
 func TestMain(m *testing.M) {
 	UserToken = os.Getenv("USERTOKEN")
 	AdminToken = os.Getenv("ADMINTOKEN")
 	AppHost = os.Getenv("APPHOST")
+
+	//teardown
+	err := removeUsers()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	rand.Seed(int64(os.Getpid()))
 	os.Exit(m.Run())
@@ -52,7 +89,7 @@ func TestAPI_CreateUser(t *testing.T) {
 
 	t.Log("Successfully created the following new user")
 	desc := User{}
-	json.Unmarshal(*b, &desc)
+	json.Unmarshal(b, &desc)
 	t.Log(desc)
 }
 
@@ -67,7 +104,7 @@ func TestAPI_ListUsers(t *testing.T) {
 
 	t.Log("Successfully listed a set of users")
 	desc := userListResponse{}
-	json.Unmarshal(*b, &desc)
+	json.Unmarshal(b, &desc)
 	t.Log(desc.Users)
 }
 
@@ -94,7 +131,7 @@ func TestAPI_UpdateUser(t *testing.T) {
 	}
 
 	newUser := User{}
-	e = json.Unmarshal(*b, &newUser)
+	e = json.Unmarshal(b, &newUser)
 	if e != nil {
 		t.Log("Error when attempting to unmarshal UserDescriptor")
 		t.Fatal(e)
@@ -115,7 +152,7 @@ func TestAPI_GetUploadId(t *testing.T) {
 	}
 
 	children := Children{}
-	err = json.Unmarshal(*data, &children)
+	err = json.Unmarshal(data, &children)
 	if err != nil {
 		t.Fatal("Error unmarshalling the children of root folder")
 	}
@@ -123,13 +160,12 @@ func TestAPI_GetUploadId(t *testing.T) {
 	var fileId string
 	var etag string
 	for _, f := range children.Files {
-		if f.Name == "appconfig.json" {
-			fileId = f.Id
-			etag = f.Etag
-		}
+		fileId = f.Id
+		etag = f.Etag
+		break
 	}
 
-	t.Logf("FileId for appconfig.json is %s:%s", fileId, etag)
+	t.Logf("FileId,Etag are %s:%s", fileId, etag)
 	uploadId, err := c.GetFileUploadId(fileId, []string{etag})
 	if err != nil {
 		t.Logf("Unable to get file upload id")
@@ -148,5 +184,5 @@ func TestAPI_CreateGroup(t *testing.T) {
 		t.Logf("Unable to create new group %s", groupName)
 		t.Fatal(err)
 	}
-	t.Log(string(*body))
+	t.Log(string(body))
 }

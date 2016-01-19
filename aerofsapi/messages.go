@@ -53,6 +53,7 @@ type SharedFolder struct {
 }
 
 type SFMember struct {
+	Sid         string   `json:"-"`
 	Email       string   `json:"email"`
 	FirstName   string   `json:"first_name"`
 	LastName    string   `json:"last_name"`
@@ -81,6 +82,7 @@ type Group struct {
 }
 
 type GroupMember struct {
+	GroupId   string `json:"-"`
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
@@ -93,8 +95,8 @@ type Invitee struct {
 }
 
 type Invitation struct {
-	Id          string   `json:"shared_id"`
-	Name        string   `json:"shared_name"`
+	Sid         string   `json:"share_id"`
+	Name        string   `json:"share_name"`
 	Inviter     string   `json:"invited_by"`
 	Permissions []string `json:"permissions"`
 }

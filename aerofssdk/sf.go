@@ -12,29 +12,21 @@ type SharedFolderClient struct {
 	Etag      string
 }
 
-type SharedFolder struct {
-	Id         string            `json:"id,omitempty"`
-	Name       string            `json:"name"`
-	External   bool              `json:"is_external,omitempty"`
-	Members    []SFMember        `json:"members,omitempty"`
-	Groups     []SFGroupMember   `json:"groups,omitempty"`
-	Pending    []SFPendingMember `json:"pending,omitempty"`
-	Permission []string          `json:"caller_effective_permissions,omitempty"`
-}
+type SharedFolder api.SharedFolder
 
 // Retrieve a list of SharedFolder member descriptors
 // TOD : Should an Etag be return for each one?
-func ListSharedFolders(c *api.Client, sid string, etags []string) (*[]SharedFolder, error) {
+func ListSharedFolders(c *api.Client, sid string, etags []string) ([]SharedFolder, error) {
 	body, _, err := c.ListSharedFolders(sid, etags)
 	if err != nil {
 		return nil, err
 	}
 	sfs := []SharedFolder{}
-	err = json.Unmarshal(*body, &sfs)
+	err = json.Unmarshal(body, &sfs)
 	if err != nil {
 		return nil, errors.New("Unable to demarshal the list of retrieved SharedFolders")
 	}
-	return &sfs, nil
+	return sfs, nil
 }
 
 // Retrieve an existing shared folder
@@ -44,7 +36,7 @@ func GetSharedFolderClient(c *api.Client, sid string, etags []string) (*SharedFo
 		return nil, err
 	}
 	sfClient := SharedFolderClient{APIClient: c}
-	err = json.Unmarshal(*body, &sfClient.Desc)
+	err = json.Unmarshal(body, &sfClient.Desc)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal retrieved Shared Folder")
 	}
@@ -60,7 +52,7 @@ func CreateSharedFolderClient(c *api.Client, name string) (*SharedFolderClient, 
 	}
 
 	sfClient := SharedFolderClient{APIClient: c}
-	err = json.Unmarshal(*body, &sfClient.Desc)
+	err = json.Unmarshal(body, &sfClient.Desc)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal retrieved SharedFolder")
 	}
@@ -75,7 +67,7 @@ func (sfClient *SharedFolderClient) load() error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &sfClient.Desc)
+	err = json.Unmarshal(body, &sfClient.Desc)
 	if err != nil {
 		return errors.New("Unable to demarshal the retrieved SharedFolder")
 	}

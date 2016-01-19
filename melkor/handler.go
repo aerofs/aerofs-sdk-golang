@@ -77,7 +77,7 @@ func yourDevicesHandler(w http.ResponseWriter, r *http.Request) {
 	ac, err := aerofsapi.NewAuthClient(appConfig, "", "", []string{})
 	a, _ := aerofsapi.NewClient(token, ac.AeroUrl)
 	devices, _ := sdk.ListDevices(a, session.Values["email"].(string))
-	logger.Print(*devices)
+	logger.Print(devices)
 
 	t, err := template.ParseFiles("templates/userDevices.tmpl")
 	logger.Print("Attempting to parse user devices page")

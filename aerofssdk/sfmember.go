@@ -18,30 +18,24 @@ type SFMemberClient struct {
 }
 
 // A Shared Folder Member is a member of an AeroFS Shared Folder
-type SFMember struct {
-	Email       string   `json:"email"`
-	FirstName   string   `json:"first_name"`
-	LastName    string   `json:"last_name"`
-	Permissions []string `json:"permissions"`
-	Sid         string
-}
+type SFMember api.SFMember
 
 // Retrieve a list of SharedFolder member descriptors
 // TOD : Should an Etag be return for each one?
-func ListSFMember(c *api.Client, sid string, etags []string) (*[]SFMember, error) {
+func ListSFMember(c *api.Client, sid string, etags []string) ([]SFMember, error) {
 	body, _, err := c.ListSFMembers(sid, etags)
 	if err != nil {
 		return nil, err
 	}
 	sfmembers := []SFMember{}
-	err = json.Unmarshal(*body, &sfmembers)
+	err = json.Unmarshal(body, &sfmembers)
 	if err != nil {
 		return nil, errors.New("Unable to demarshal the list of retrieved SharedFolder members")
 	}
 	for _, v := range sfmembers {
 		v.Sid = sid
 	}
-	return &sfmembers, nil
+	return sfmembers, nil
 }
 
 // Return an existing SFMemberClient given its shared folder and user email
@@ -51,7 +45,7 @@ func GetSFMemberClient(c *api.Client, sid, email string, etags []string) (*SFMem
 		return nil, err
 	}
 	sfmClient := SFMemberClient{APIClient: c, Etag: header.Get("ETag"), Desc: SFMember{Sid: sid, Email: email}}
-	err = json.Unmarshal(*body, &sfmClient.Desc)
+	err = json.Unmarshal(body, &sfmClient.Desc)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal retrieved SFMember")
 	}
@@ -61,8 +55,8 @@ func GetSFMemberClient(c *api.Client, sid, email string, etags []string) (*SFMem
 
 // Given a buffer of bytes representing an SFMember Descriptor, load the data
 // into the client
-func (sfm *SFMemberClient) reserialize(buffer *[]byte, header *http.Header) error {
-	err := json.Unmarshal(*buffer, &sfm.Desc)
+func (sfm *SFMemberClient) reserialize(buffer []byte, header *http.Header) error {
+	err := json.Unmarshal(buffer, &sfm.Desc)
 	if err != nil {
 		return errors.New("Unable to unmarshal retrieved SFMember")
 	}

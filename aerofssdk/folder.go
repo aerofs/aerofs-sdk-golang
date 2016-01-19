@@ -21,16 +21,7 @@ type FolderClient struct {
 }
 
 // Folder descriptor
-type Folder struct {
-	Id        string     `json:"id"`
-	Name      string     `json:"name"`
-	Parent    string     `json:"parent"`
-	IsShared  bool       `json:"is_shared"`
-	Sid       string     `json:"sid"`
-	Path      ParentPath `json:"path"`
-	ChildList Children   `json:"children"`
-	Etag      string
-}
+type Folder api.Folder
 
 // Return an existing FolderClient given an existing folderId and on-demand fields
 func GetFolderClient(c *api.Client, folderId string, fields []string) (*FolderClient, error) {
@@ -40,7 +31,7 @@ func GetFolderClient(c *api.Client, folderId string, fields []string) (*FolderCl
 	}
 
 	f := FolderClient{APIClient: c, OnDemand: fields}
-	err = json.Unmarshal(*body, &f.Desc)
+	err = json.Unmarshal(body, &f.Desc)
 
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal existing Folder")
@@ -57,7 +48,7 @@ func (f *FolderClient) LoadPath() error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &f.Desc.Path)
+	err = json.Unmarshal(body, &f.Desc.Path)
 	if err != nil {
 		return errors.New("Unable to unmarshal retrieved folder ParentPath")
 	}
@@ -72,7 +63,7 @@ func (f *FolderClient) LoadChildren() error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &f.Desc.ChildList)
+	err = json.Unmarshal(body, &f.Desc.ChildList)
 	if err != nil {
 		return errors.New("Unable to unmarshal retrieved folder ParentPath")
 	}
@@ -87,7 +78,7 @@ func (f *FolderClient) LoadMetadata() error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &f.Desc)
+	err = json.Unmarshal(body, &f.Desc)
 	if err != nil {
 		return errors.New("Unable to unmarshal retrieved folder ParentPath")
 	}
@@ -121,7 +112,7 @@ func (f *FolderClient) Move(newName, parentId string) error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(*body, &f.Desc)
+	err = json.Unmarshal(body, &f.Desc)
 	if err != nil {
 		return errors.New("Unable to unmarshal the new Folder location")
 	}

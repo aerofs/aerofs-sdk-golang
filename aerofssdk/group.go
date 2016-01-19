@@ -11,11 +11,7 @@ type GroupClient struct {
 	Desc      Group
 }
 
-type Group struct {
-	Id      string        `json:"id"`
-	Name    string        `json:"name"`
-	Members []GroupMember `json:"members"`
-}
+type Group api.Group
 
 // List all groups
 func ListGroups(c *api.Client, offset, results int) (*[]Group, error) {
@@ -24,7 +20,7 @@ func ListGroups(c *api.Client, offset, results int) (*[]Group, error) {
 		return nil, err
 	}
 	groups := []Group{}
-	err = json.Unmarshal(*body, &groups)
+	err = json.Unmarshal(body, &groups)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal list of groups")
 	}
@@ -40,7 +36,7 @@ func GetGroupClient(c *api.Client, groupId string) (*GroupClient, error) {
 	}
 
 	g := GroupClient{APIClient: c}
-	err = json.Unmarshal(*body, &g.Desc)
+	err = json.Unmarshal(body, &g.Desc)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal existing group")
 	}
@@ -56,7 +52,7 @@ func CreateGroupClient(c *api.Client, groupName string) (*GroupClient, error) {
 	}
 
 	g := GroupClient{APIClient: c}
-	err = json.Unmarshal(*body, &g.Desc)
+	err = json.Unmarshal(body, &g.Desc)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal created group")
 	}
@@ -71,7 +67,7 @@ func (g *GroupClient) Load() error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &g.Desc)
+	err = json.Unmarshal(body, &g.Desc)
 	if err != nil {
 		return errors.New("Unable to unmarshal existing group")
 	}

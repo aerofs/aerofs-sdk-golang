@@ -20,14 +20,15 @@ import (
 type AuthClient struct {
 	// The URL of an AeroFS Appliance instance
 	AeroUrl string `json:"hostname"`
-	Id      string `json:"client_id"`
-	Secret  string `json:"client_secret"`
 
-	// The URL and route  the user will be redirected to after accepting scope permissions on
-	// the AeroFS Appliance
-	Redirect string
+	// 3rd-Party specific
+	Id     string `json:"client_id"`
+	Secret string `json:"client_secret"`
 
-	// Permission scopes
+	// The URL the user will be redirected to after accepting scope permissions
+	Redirect string `json:"redirect"`
+
+	// 3rd-Party specific Permission scopes
 	Scopes []string
 
 	// A unique identifier created by the 3rd-Party App and eventually passed back
@@ -36,7 +37,7 @@ type AuthClient struct {
 }
 
 // The response when receiving a token given an authorization code
-type Access struct {
+type AccessResponse struct {
 	// OAuth 2.0 Token
 	Token string `json:"access_token"`
 
@@ -86,7 +87,8 @@ func (auth *AuthClient) GetAuthorizationUrl() string {
 	}
 
 	route := "authorize"
-	link := url.URL{Scheme: "https",
+	link := url.URL{
+		Scheme:   "https",
 		Host:     auth.AeroUrl,
 		Path:     route,
 		RawQuery: v.Encode(),
@@ -95,7 +97,7 @@ func (auth *AuthClient) GetAuthorizationUrl() string {
 	return link.String()
 }
 
-// Retrieve User OAuth token, scopes given an Authorization code
+// Retrieve User OAuth token, granted scopes given an Authorization code
 func (auth *AuthClient) GetAccessToken(code string) (string, []string, error) {
 	v := url.Values{}
 	v.Set("grant_type", "authorization_code")
@@ -117,7 +119,7 @@ func (auth *AuthClient) GetAccessToken(code string) (string, []string, error) {
 		return "", []string{}, err
 	}
 
-	accessResponse := Access{}
+	accessResponse := AccessResponse{}
 	err = GetEntity(res, &accessResponse)
 	grantedScopes := strings.Split(accessResponse.Scopes, ",")
 	return accessResponse.Token, grantedScopes, err

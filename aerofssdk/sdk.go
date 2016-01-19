@@ -9,5 +9,3 @@ type AeroError struct {
 }
 
 var SFPermissions []string = []string{"WRITE", "MANAGE"}
-
-// Function used to convert a HTTP-Body into an error struct

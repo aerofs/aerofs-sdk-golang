@@ -12,34 +12,23 @@ type DeviceClient struct {
 	Desc      Device
 }
 
-// Device descriptor
-type Device struct {
-	Id          string `json:"id"`
-	Owner       string `json:"owner"`
-	Name        string `json:"name"`
-	OSFamily    string `json:"os_family"`
-	InstallDate string `json:"install_data"`
-}
-
-type DeviceStatus struct {
-	Online   bool   `json:"online"`
-	LastSeen string `json:"last_seen"`
-}
+// Device descriptors
+type Device api.Device
+type DeviceStatus api.DeviceStatus
 
 // Retrieve a list of existing Device descriptors
-// TODO : is there a better format for this?
-func ListDevices(c *api.Client, email string) (*[]Device, error) {
+func ListDevices(c *api.Client, email string) ([]Device, error) {
 	body, _, err := c.ListDevices(email)
 	if err != nil {
 		return nil, err
 	}
 
 	devices := []Device{}
-	err = json.Unmarshal(*body, &devices)
+	err = json.Unmarshal(body, &devices)
 	if err != nil {
 		return nil, errors.New("Unable to demarshal list of devices")
 	}
-	return &devices, err
+	return devices, err
 }
 
 // Return an existing device client given a deviceId
@@ -49,7 +38,7 @@ func GetDeviceClient(c *api.Client, deviceId string) (*DeviceClient, error) {
 		return nil, err
 	}
 	device := Device{}
-	err = json.Unmarshal(*body, &device)
+	err = json.Unmarshal(body, &device)
 	return &DeviceClient{c, device}, err
 }
 
@@ -60,7 +49,7 @@ func (c *DeviceClient) Update(name string) error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &c.Desc)
+	err = json.Unmarshal(body, &c.Desc)
 	if err != nil {
 		return errors.New("Unable to demarshal updated device metadata")
 	}
@@ -76,7 +65,7 @@ func (c *DeviceClient) Status() (*DeviceStatus, error) {
 	}
 
 	deviceStatus := new(DeviceStatus)
-	err = json.Unmarshal(*body, deviceStatus)
+	err = json.Unmarshal(body, deviceStatus)
 	if err != nil {
 		return nil, errors.New("Unable to demarshal current device status")
 	}

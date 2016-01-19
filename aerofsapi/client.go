@@ -13,12 +13,13 @@ import (
 )
 
 const (
-	API       = "api/v1.3"
-	CHUNKSIZE = 5000
+	// Default size used when uploading a file
+	CHUNKSIZE = 1000000
+
+	API = "api/v1.3"
 )
 
-// A Client is used to communicate with an AeroFS Appliance and return the
-// resultant responses
+// A Client is used to communicate with an AeroFS Appliance
 type Client struct {
 	// The hostname/IP of the AeroFS Appliance
 	// Used when constructing the default API Prefix for all subsequent API calls
@@ -32,11 +33,12 @@ type Client struct {
 	// For conditional file, and folder requests, the header is populated
 	// with an ETag
 	Header http.Header
+
+	// Stored http-connection to prevent multile TLS, TCP handshakes
+	hClient http.Client
 }
 
-// SDK-Client Constructor
-// Constructs the HTTP header used for subsequent requests
-// OAuth token stored in HTTP header
+// API-Client Constructor
 func NewClient(token, host string) (*Client, error) {
 	header := http.Header{}
 	header.Set("Authorization", "Bearer "+token)
@@ -50,18 +52,21 @@ func NewClient(token, host string) (*Client, error) {
 	return &c, nil
 }
 
-// For a given HTTP-Response, this returns the associated body,header
-func unpackageResponse(res *http.Response) (*[]byte, *http.Header, error) {
-	body, _ := ioutil.ReadAll(res.Body)
+// Extract the response body and header
+func unpackageResponse(res *http.Response) ([]byte, *http.Header, error) {
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, nil, errors.New("Unable to read body of HTTP response")
+	}
 	header := res.Header
 
 	// For each API call, unpackage the HTTP response and return an error if a non
 	// 2XX status code is retrieved
 	if res.StatusCode >= 300 {
 		err := errors.New(res.Status)
-		return &body, &header, err
+		return body, &header, err
 	}
-	return &body, &header, nil
+	return body, &header, nil
 }
 
 // Construct a URL given a route and query parameters
@@ -85,9 +90,9 @@ func (c *Client) SetToken(token string) {
 	c.Header.Set("Authorization", "Bearer "+token)
 }
 
+//
 // Wrappers for basic HTTP functions
-// Use HTTPClient since the stdlib does not provide function prototypes for all
-// request types
+//
 
 // HTTP-GET
 func (c *Client) get(url string) (*http.Response, error) {
@@ -97,8 +102,7 @@ func (c *Client) get(url string) (*http.Response, error) {
 	}
 
 	request.Header = c.Header
-	hClient := &http.Client{}
-	return hClient.Do(request)
+	return c.hClient.Do(request)
 }
 
 // HTTP-POST
@@ -113,8 +117,7 @@ func (c *Client) post(url string, buffer io.Reader) (*http.Response, error) {
 		request.Header.Del("Content-Type")
 	}
 
-	hClient := &http.Client{}
-	return hClient.Do(request)
+	return c.hClient.Do(request)
 }
 
 // HTTP-PUT
@@ -130,8 +133,7 @@ func (c *Client) put(url string, buffer io.Reader) (*http.Response, error) {
 		request.Header.Del("Content-Type")
 	}
 
-	hClient := &http.Client{}
-	return hClient.Do(request)
+	return c.hClient.Do(request)
 }
 
 // HTTP-DELETE
@@ -142,8 +144,7 @@ func (c *Client) del(url string) (*http.Response, error) {
 	}
 
 	request.Header = c.Header
-	hClient := &http.Client{}
-	return hClient.Do(request)
+	return c.hClient.Do(request)
 }
 
 // Generic Handler for HTTP request
@@ -176,8 +177,7 @@ func (c *Client) request(req, url string, options *http.Header, buffer io.Reader
 		request.Header.Set("Content-Type", contentType)
 	}
 
-	hClient := &http.Client{}
-	return hClient.Do(request)
+	return c.hClient.Do(request)
 }
 
 // Unmarshalls data from an HTTP Response into a given entity

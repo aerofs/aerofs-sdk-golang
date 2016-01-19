@@ -11,26 +11,21 @@ type GroupMemberClient struct {
 	Desc      GroupMember
 }
 
-type GroupMember struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	GroupId   string
-}
+type GroupMember api.GroupMember
 
-func ListGroupMembers(c *api.Client, groupId string) (*[]GroupMember, error) {
+func ListGroupMembers(c *api.Client, groupId string) ([]GroupMember, error) {
+	var groupMembers []GroupMember
 	body, _, err := c.ListGroupMembers(groupId)
 	if err != nil {
 		return nil, err
 	}
 
-	groupMembers := []GroupMember{}
-	err = json.Unmarshal(*body, &groupMembers)
+	err = json.Unmarshal(body, &groupMembers)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal list of group members")
 	}
 
-	return &groupMembers, nil
+	return groupMembers, nil
 }
 
 func GetGroupMember(c *api.Client, groupId, memberEmail string) (*GroupMemberClient, error) {
@@ -40,7 +35,7 @@ func GetGroupMember(c *api.Client, groupId, memberEmail string) (*GroupMemberCli
 	}
 
 	g := GroupMemberClient{APIClient: c, Desc: GroupMember{GroupId: groupId}}
-	err = json.Unmarshal(*body, &g.Desc)
+	err = json.Unmarshal(body, &g.Desc)
 	if err != nil {
 		return nil, errors.New("Unable to unmarshal group member")
 	}
@@ -55,7 +50,7 @@ func (g *GroupMemberClient) Load() error {
 		return err
 	}
 
-	err = json.Unmarshal(*body, &g.Desc)
+	err = json.Unmarshal(body, &g.Desc)
 	if err != nil {
 		return errors.New("Unable to unmarshal group member")
 	}
