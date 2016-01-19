@@ -32,7 +32,7 @@ func ListDevices(c *api.Client, email string) ([]Device, error) {
 }
 
 // Return an existing device client given a deviceId
-func GetDeviceClient(c *api.Client, deviceId string) (*DeviceClient, error) {
+func NewDeviceClient(c *api.Client, deviceId string) (*DeviceClient, error) {
 	body, _, err := c.GetDeviceMetadata(deviceId)
 	if err != nil {
 		return nil, err

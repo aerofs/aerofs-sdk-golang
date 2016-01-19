@@ -6,11 +6,13 @@ import (
 	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 )
 
+// GroupMember, client wrapper
 type GroupMemberClient struct {
 	APIClient *api.Client
 	Desc      GroupMember
 }
 
+// GroupMember descriptor
 type GroupMember api.GroupMember
 
 func ListGroupMembers(c *api.Client, groupId string) ([]GroupMember, error) {
@@ -28,7 +30,7 @@ func ListGroupMembers(c *api.Client, groupId string) ([]GroupMember, error) {
 	return groupMembers, nil
 }
 
-func GetGroupMember(c *api.Client, groupId, memberEmail string) (*GroupMemberClient, error) {
+func NewGroupMember(c *api.Client, groupId, memberEmail string) (*GroupMemberClient, error) {
 	body, _, err := c.GetGroupMember(groupId, memberEmail)
 	if err != nil {
 		return nil, err

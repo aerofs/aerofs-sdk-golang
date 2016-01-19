@@ -67,7 +67,7 @@ func initLogger() error {
 	logTime := fmt.Sprintf("%d-%d-%d_%d-%d-%d",
 		t.Year(), t.Month(), t.Day(),
 		t.Hour(), t.Minute(), t.Second())
-	logName := fmt.Sprintf("logs/Melkor_Logs_%s", logTime)
+	logName := fmt.Sprintf("Melkor_Logs_%s", logTime)
 	logFile, err := os.OpenFile(logName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err

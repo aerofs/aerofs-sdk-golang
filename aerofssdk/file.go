@@ -7,16 +7,18 @@ import (
 	"io"
 )
 
+// File, client wrapper
 type FileClient struct {
 	APIClient *api.Client
 	Desc      File
 	OnDemand  []string
 }
 
+// File descriptor
 type File api.File
 
 // Construct a FileClient given a file identifier and APIClient
-func GetFileClient(c *api.Client, fileId string, fields []string) (*FileClient, error) {
+func NewFileClient(c *api.Client, fileId string, fields []string) (*FileClient, error) {
 	body, header, err := c.GetFileMetadata(fileId, fields)
 	if err != nil {
 		return nil, err

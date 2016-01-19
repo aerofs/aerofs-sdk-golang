@@ -6,16 +6,18 @@ import (
 	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 )
 
+// SharedFolder, client wrapper
 type SharedFolderClient struct {
 	APIClient *api.Client
 	Desc      SharedFolder
 	Etag      string
 }
 
+// SharedFolder descriptors
 type SharedFolder api.SharedFolder
 
 // Retrieve a list of SharedFolder member descriptors
-// TOD : Should an Etag be return for each one?
+// TODO : Should an Etag be return for each one?
 func ListSharedFolders(c *api.Client, sid string, etags []string) ([]SharedFolder, error) {
 	body, _, err := c.ListSharedFolders(sid, etags)
 	if err != nil {

@@ -6,11 +6,13 @@ import (
 	api "github.com/aerofs/aerofs-sdk-golang/aerofsapi"
 )
 
+// Group, client wrapper
 type GroupClient struct {
 	APIClient *api.Client
 	Desc      Group
 }
 
+// Group descriptor
 type Group api.Group
 
 // List all groups
@@ -29,7 +31,7 @@ func ListGroups(c *api.Client, offset, results int) (*[]Group, error) {
 }
 
 // Retrieve an existing group
-func GetGroupClient(c *api.Client, groupId string) (*GroupClient, error) {
+func NewGroupClient(c *api.Client, groupId string) (*GroupClient, error) {
 	body, _, err := c.GetGroup(groupId)
 	if err != nil {
 		return nil, err

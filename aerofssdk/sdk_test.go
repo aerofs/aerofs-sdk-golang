@@ -119,7 +119,7 @@ func TestListUsers(t *testing.T) {
 // Retrieve the root folder for a given user
 func TestGetFolder(t *testing.T) {
 	c, _ := api.NewClient(UserToken, "share.syncfs.com")
-	f, e := GetFolderClient(c, "root", []string{"path", "children"})
+	f, e := NewFolderClient(c, "root", []string{"path", "children"})
 	if e != nil {
 		t.Fatalf("Unable to retrieve a FolderClient : %s", e)
 	}

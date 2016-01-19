@@ -11,13 +11,14 @@ import (
 // It encapsulates a typical user with added shared-folder permissions and the
 // ID of the shared folder the member belongs to
 
+// SFMember, Client wrapper
 type SFMemberClient struct {
 	APIClient *api.Client
 	Desc      SFMember
 	Etag      string
 }
 
-// A Shared Folder Member is a member of an AeroFS Shared Folder
+// SharedFolderMember descriptor
 type SFMember api.SFMember
 
 // Retrieve a list of SharedFolder member descriptors

@@ -18,7 +18,7 @@ type userListResponse struct {
 	Users   []User `json:"data"`
 }
 
-// Wrapper for a used mapped to a client
+// User, client wrapper
 type UserClient struct {
 	APIClient *api.Client `json:"-"`
 	Desc      User

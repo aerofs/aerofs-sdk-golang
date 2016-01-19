@@ -129,7 +129,7 @@ func yourFilesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve children of root folder
-	folder, err := sdk.GetFolderClient(a, "root", []string{})
+	folder, err := sdk.NewFolderClient(a, "root", []string{})
 	if err != nil {
 		logger.Println("Unable to retrieve file client for file.")
 		http.Error(w, err.Error(), 500)

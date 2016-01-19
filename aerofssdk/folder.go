@@ -10,7 +10,7 @@ import (
 // Once created, an object can be manually updated to retrieve up to date values
 // from the AeroFS appliance
 
-// Wrapper used to map a folder to an API client
+// Folder, client wrapper
 type FolderClient struct {
 	APIClient *api.Client
 	Desc      Folder
@@ -24,7 +24,7 @@ type FolderClient struct {
 type Folder api.Folder
 
 // Return an existing FolderClient given an existing folderId and on-demand fields
-func GetFolderClient(c *api.Client, folderId string, fields []string) (*FolderClient, error) {
+func NewFolderClient(c *api.Client, folderId string, fields []string) (*FolderClient, error) {
 	body, header, err := c.GetFolderMetadata(folderId, fields)
 	if err != nil {
 		return nil, err
