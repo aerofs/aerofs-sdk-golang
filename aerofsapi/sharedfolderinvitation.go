@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-// Shared Folder Invitation Calls
-
 func (c *Client) ListSFInvitations(email string) ([]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "invitations"}, "/")
 	link := c.getURL(route, "")

@@ -8,10 +8,12 @@ import (
 	"strings"
 )
 
-// Inviteee Related Calls
+const (
+	INVITEE_ROUTE = "invitees"
+)
 
 func (c *Client) GetInvitee(email string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"invitees", email}, "/")
+	route := strings.Join([]string{INVITEE_ROUTE, email}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.get(link)
@@ -25,8 +27,7 @@ func (c *Client) GetInvitee(email string) ([]byte, *http.Header, error) {
 
 func (c *Client) CreateInvitee(email_to, email_from string) ([]byte,
 	*http.Header, error) {
-	route := "invitees"
-	link := c.getURL(route, "")
+	link := c.getURL(INVITEE_ROUTE, "")
 	invitee := map[string]string{
 		"email_to":   email_to,
 		"email_from": email_from,
@@ -48,7 +49,7 @@ func (c *Client) CreateInvitee(email_to, email_from string) ([]byte,
 
 // Delete an unsatisfied invitation
 func (c *Client) DeleteInvitee(email string) error {
-	route := strings.Join([]string{"invitees", email}, "/")
+	route := strings.Join([]string{INVITEE_ROUTE, email}, "/")
 	link := c.getURL(route, "")
 	res, err := c.del(link)
 	defer res.Body.Close()

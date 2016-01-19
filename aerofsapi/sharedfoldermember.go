@@ -8,12 +8,8 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// SharedFolder Member calls
-
 func (c *Client) ListSFMembers(id string, etags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"shares", id, "members"}, "/")
+	route := strings.Join([]string{SF_ROUTE, id, "members"}, "/")
 	newHeader := http.Header{}
 	if len(etags) > 0 {
 		newHeader = http.Header{"If-None-Match": etags}
@@ -29,7 +25,7 @@ func (c *Client) ListSFMembers(id string, etags []string) ([]byte, *http.Header,
 }
 
 func (c *Client) GetSFMember(id, email string, etags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"shares", id, "members", email}, "/")
+	route := strings.Join([]string{SF_ROUTE, id, "members", email}, "/")
 	link := c.getURL(route, "")
 	newHeader := http.Header{}
 	if len(etags) > 0 {
@@ -45,7 +41,7 @@ func (c *Client) GetSFMember(id, email string, etags []string) ([]byte, *http.He
 }
 
 func (c *Client) AddSFMember(id, email string, permissions []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"shares", id, "members"}, "/")
+	route := strings.Join([]string{SF_ROUTE, id, "members"}, "/")
 	link := c.getURL(route, "")
 
 	newMember := map[string]interface{}{
@@ -66,7 +62,7 @@ func (c *Client) AddSFMember(id, email string, permissions []string) ([]byte, *h
 }
 
 func (c *Client) SetSFMemberPermissions(id, email string, permissions, etags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"shares", id, "members", email}, "/")
+	route := strings.Join([]string{SF_ROUTE, id, "members", email}, "/")
 	newHeader := http.Header{"If-Match": etags}
 	link := c.getURL(route, "")
 
@@ -87,7 +83,7 @@ func (c *Client) SetSFMemberPermissions(id, email string, permissions, etags []s
 }
 
 func (c *Client) RemoveSFMember(id, email string, etags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"shares", id, "members", email}, "/")
+	route := strings.Join([]string{SF_ROUTE, id, "members", email}, "/")
 	newHeader := http.Header{"If-Match": etags}
 	link := c.getURL(route, "")
 

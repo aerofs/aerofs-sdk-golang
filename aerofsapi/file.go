@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// File related calls
+const (
+	FILE_ROUTE = "files"
+)
 
 func (c *Client) GetFileMetadata(fileId string, fields []string) ([]byte,
 	*http.Header, error) {
-	route := strings.Join([]string{"files", fileId}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileId}, "/")
 	query := url.Values{"fields": fields}
 	link := c.getURL(route, query.Encode())
 
@@ -35,7 +35,7 @@ func (c *Client) GetFileMetadata(fileId string, fields []string) ([]byte,
 }
 
 func (c *Client) GetFilePath(fileId string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"files", fileId, "path"}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileId, "path"}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.get(link)
@@ -49,7 +49,7 @@ func (c *Client) GetFilePath(fileId string) ([]byte, *http.Header, error) {
 
 //
 func (c *Client) GetFileContent(fileId, rangeEtag string, startIndex, endIndex int, matchEtags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileId, "content"}, "/")
 	link := c.getURL(route, "")
 
 	// Construct header
@@ -78,8 +78,7 @@ func (c *Client) GetFileContent(fileId, rangeEtag string, startIndex, endIndex i
 // Instantiate a newfile
 func (c *Client) CreateFile(parentId, fileName string) ([]byte, *http.Header,
 	error) {
-	route := "files"
-	link := c.getURL(route, "")
+	link := c.getURL(FILE_ROUTE, "")
 
 	newFile := map[string]string{
 		"parent": parentId,
@@ -129,7 +128,7 @@ func (c *Client) GetFileUploadId(fileId string, etags []string) (string, error) 
 
 // Retrieve the list of bytes already transferred by an unfinished upload
 func (c *Client) GetUploadBytesSize(fileId, uploadId string, etags []string) (int, error) {
-	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileId, "content"}, "/")
 	link := c.getURL(route, "")
 	newHeader := http.Header{}
 	newHeader.Set("Content-Range", "bytes /*/")
@@ -156,7 +155,7 @@ func (c *Client) GetUploadBytesSize(fileId, uploadId string, etags []string) (in
 
 // Upload a single file chunk
 func (c *Client) UploadFileChunk(fileId, uploadId string, chunks []byte, startIndex, lastIndex int) (*http.Header, error) {
-	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileId, "content"}, "/")
 	link := c.getURL(route, "")
 	byteRange := fmt.Sprintf("bytes %d-%d/*", startIndex, lastIndex)
 	newHeader := http.Header{}
@@ -176,7 +175,7 @@ func (c *Client) UploadFileChunk(fileId, uploadId string, chunks []byte, startIn
 
 // Upload a file
 func (c *Client) UploadFile(fileId, uploadId string, file io.Reader, etags []string) error {
-	route := strings.Join([]string{"files", fileId, "content"}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileId, "content"}, "/")
 	link := c.getURL(route, "")
 	newHeader := http.Header{
 		"If-Match":  etags,
@@ -229,7 +228,7 @@ func (c *Client) uploadFileChunks(link string, header *http.Header, file io.Read
 	return nil
 }
 func (c *Client) MoveFile(fileId, parentId, name string, etags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"files", fileId}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileId}, "/")
 	link := c.getURL(route, "")
 
 	newHeader := http.Header{}
@@ -259,7 +258,7 @@ func (c *Client) DeleteFile(fileid string, etags []string) error {
 		return errors.New("At least 1 ETag must be present when deleting a file")
 	}
 
-	route := strings.Join([]string{"files", fileid}, "/")
+	route := strings.Join([]string{FILE_ROUTE, fileid}, "/")
 	link := c.getURL(route, "")
 	newHeader := http.Header{"If-Match": etags}
 

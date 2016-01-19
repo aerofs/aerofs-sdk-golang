@@ -8,10 +8,6 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// SharedFolder Group Member calls
-
 // List all associated groups for a shared folder with a given identifier
 func (c *Client) ListSFGroups(sid string) ([]byte, *http.Header, error) {
 	path := strings.Join([]string{"shares", sid, "groups"}, "/")
@@ -30,7 +26,7 @@ func (c *Client) ListSFGroups(sid string) ([]byte, *http.Header, error) {
 // As of now, this only returns the new permissions associated with each group
 // and the two argument
 func (c *Client) GetSFGroups(sid, gid string) ([]byte, *http.Header, error) {
-	path := strings.Join([]string{"shares", sid, "members", gid}, "/")
+	path := strings.Join([]string{SF_ROUTE, sid, "members", gid}, "/")
 	link := c.getURL(path, "")
 
 	res, err := c.get(link)
@@ -44,7 +40,7 @@ func (c *Client) GetSFGroups(sid, gid string) ([]byte, *http.Header, error) {
 
 // Construct a new group for an existing Shared Folder
 func (c *Client) AddGroupToSharedFolder(sid string, permissions []string) ([]byte, *http.Header, error) {
-	path := strings.Join([]string{"shares", sid, "groups"}, "/")
+	path := strings.Join([]string{SF_ROUTE, sid, "groups"}, "/")
 	link := c.getURL(path, "")
 	reqBody := map[string]interface{}{
 		"id":          sid,
@@ -64,7 +60,7 @@ func (c *Client) AddGroupToSharedFolder(sid string, permissions []string) ([]byt
 
 // Modify the existing permissions of a group for an existing shared folder
 func (c *Client) SetSFGroupPermissions(sid, gid string, permissions []string) ([]byte, *http.Header, error) {
-	path := strings.Join([]string{"shares", sid, "groups", gid}, "/")
+	path := strings.Join([]string{SF_ROUTE, sid, "groups", gid}, "/")
 	link := c.getURL(path, "")
 
 	permsList := map[string][]string{
@@ -85,7 +81,7 @@ func (c *Client) SetSFGroupPermissions(sid, gid string, permissions []string) ([
 
 // Remove an existing group from its associated shared folder
 func (c *Client) RemoveSFGroup(sid, gid string) error {
-	path := strings.Join([]string{"shares", sid, "groups", gid}, "/")
+	path := strings.Join([]string{SF_ROUTE, sid, "groups", gid}, "/")
 	link := c.getURL(path, "")
 
 	res, err := c.del(link)

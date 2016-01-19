@@ -7,9 +7,9 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// SharedFolder calls
+const (
+	SF_ROUTE = "shares"
+)
 
 func (c *Client) ListSharedFolders(email string, etags []string) ([]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "shares"}, "/")
@@ -26,7 +26,7 @@ func (c *Client) ListSharedFolders(email string, etags []string) ([]byte, *http.
 }
 
 func (c *Client) ListSharedFolderMetadata(sid string, etags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"shares", sid}, "/")
+	route := strings.Join([]string{SF_ROUTE, sid}, "/")
 	link := c.getURL(route, "")
 	newHeader := http.Header{"If-None-Match": etags}
 
@@ -38,7 +38,7 @@ func (c *Client) ListSharedFolderMetadata(sid string, etags []string) ([]byte, *
 }
 
 func (c *Client) CreateSharedFolder(name string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"shares"}, "/")
+	route := strings.Join([]string{SF_ROUTE}, "/")
 	link := c.getURL(route, "")
 	data := []byte(fmt.Sprintf(`{"name" : %s"}`, name))
 

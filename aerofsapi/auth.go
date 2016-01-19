@@ -17,6 +17,7 @@ import (
 // Can be constructed from a generated AeroFS Config Json file
 // Note that the Redirect URL must be the same as that stored when registering
 // the third party application
+
 type AuthClient struct {
 	// The URL of an AeroFS Appliance instance
 	AeroUrl string `json:"hostname"`
@@ -77,7 +78,7 @@ func NewAuthClient(fileName, redirectUri, state string, scopes []string) (*AuthC
 // access
 func (auth *AuthClient) GetAuthorizationUrl() string {
 	scopes := strings.Join(auth.Scopes, ",")
-	v := url.Values{}
+	v := make(url.Values)
 	v.Set("response_type", "code")
 	v.Set("client_id", auth.Id)
 	v.Set("redirect_uri", auth.Redirect)
@@ -99,7 +100,7 @@ func (auth *AuthClient) GetAuthorizationUrl() string {
 
 // Retrieve User OAuth token, granted scopes given an Authorization code
 func (auth *AuthClient) GetAccessToken(code string) (string, []string, error) {
-	v := url.Values{}
+	v := make(url.Values)
 	v.Set("grant_type", "authorization_code")
 	v.Set("code", code)
 	v.Set("client_id", auth.Id)

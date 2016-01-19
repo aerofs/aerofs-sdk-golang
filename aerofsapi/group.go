@@ -9,16 +9,15 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// Group related calls
+const (
+	GROUP_ROUTE = "groups"
+)
 
 func (c *Client) ListGroups(offset, results int) ([]byte, *http.Header, error) {
-	route := "groups"
 	query := url.Values{}
 	query.Set("offset", strconv.Itoa(offset))
 	query.Set("results", strconv.Itoa(results))
-	link := c.getURL(route, query.Encode())
+	link := c.getURL(GROUP_ROUTE, query.Encode())
 
 	res, err := c.get(link)
 	defer res.Body.Close()
@@ -30,8 +29,7 @@ func (c *Client) ListGroups(offset, results int) ([]byte, *http.Header, error) {
 }
 
 func (c *Client) CreateGroup(groupName string) ([]byte, *http.Header, error) {
-	route := "groups"
-	link := c.getURL(route, "")
+	link := c.getURL(GROUP_ROUTE, "")
 	// TODO : Is this preferred to constructing a map, then marshalling?
 	// robust vs. bootstrap
 	newGroup := []byte(fmt.Sprintf(`{"name" : %s}`, groupName))
@@ -59,7 +57,7 @@ func (c *Client) GetGroup(groupId string) ([]byte, *http.Header, error) {
 }
 
 func (c *Client) DeleteGroup(groupId string) error {
-	route := strings.Join([]string{API, "groups", groupId}, "/")
+	route := strings.Join([]string{GROUP_ROUTE, groupId}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.del(link)

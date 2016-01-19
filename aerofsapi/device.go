@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// Device specific API Calls
+const (
+	DEVICES_ROUTE = "devices"
+)
 
 func (c *Client) ListDevices(email string) ([]byte, *http.Header, error) {
 	route := strings.Join([]string{"users", email, "devices"}, "/")
@@ -26,7 +26,7 @@ func (c *Client) ListDevices(email string) ([]byte, *http.Header, error) {
 }
 
 func (c *Client) GetDeviceMetadata(deviceId string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"devices", deviceId}, "/")
+	route := strings.Join([]string{DEVICES_ROUTE, deviceId}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.get(link)
@@ -39,7 +39,7 @@ func (c *Client) GetDeviceMetadata(deviceId string) ([]byte, *http.Header, error
 }
 
 func (c *Client) UpdateDevice(deviceName string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"devices", deviceName}, "/")
+	route := strings.Join([]string{DEVICES_ROUTE, deviceName}, "/")
 	link := c.getURL(route, "")
 	newDevice := map[string]string{
 		"name": deviceName,
@@ -61,7 +61,7 @@ func (c *Client) UpdateDevice(deviceName string) ([]byte, *http.Header, error) {
 
 func (c *Client) GetDeviceStatus(deviceId string) ([]byte, *http.Header,
 	error) {
-	route := strings.Join([]string{"devices", deviceId, "status"}, "/")
+	route := strings.Join([]string{DEVICES_ROUTE, deviceId, "status"}, "/")
 	link := c.getURL(route, "")
 	res, err := c.get(link)
 	defer res.Body.Close()

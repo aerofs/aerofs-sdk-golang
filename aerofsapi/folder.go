@@ -9,12 +9,12 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// Folder calls
+const (
+	FOLDER_ROUTE = "folders"
+)
 
 func (c *Client) GetFolderMetadata(folderId string, fields []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"folders", folderId}, "/")
+	route := strings.Join([]string{FOLDER_ROUTE, folderId}, "/")
 	query := ""
 	if len(fields) > 0 {
 		v := url.Values{"fields": fields}
@@ -32,7 +32,7 @@ func (c *Client) GetFolderMetadata(folderId string, fields []string) ([]byte, *h
 }
 
 func (c *Client) GetFolderPath(folderId string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"folders", folderId, "path"}, "/")
+	route := strings.Join([]string{FOLDER_ROUTE, folderId, "path"}, "/")
 	link := c.getURL(route, "")
 	res, err := c.get(link)
 	defer res.Body.Close()
@@ -45,7 +45,7 @@ func (c *Client) GetFolderPath(folderId string) ([]byte, *http.Header, error) {
 }
 
 func (c *Client) GetFolderChildren(folderId string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"folders", folderId, "children"}, "/")
+	route := strings.Join([]string{FOLDER_ROUTE, folderId, "children"}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.get(link)
@@ -57,8 +57,7 @@ func (c *Client) GetFolderChildren(folderId string) ([]byte, *http.Header, error
 }
 
 func (c *Client) CreateFolder(parentId, name string) ([]byte, *http.Header, error) {
-	route := "folders"
-	link := c.getURL(route, "")
+	link := c.getURL(FOLDER_ROUTE, "")
 
 	newFolder := map[string]string{
 		"parent": parentId,
@@ -80,7 +79,7 @@ func (c *Client) CreateFolder(parentId, name string) ([]byte, *http.Header, erro
 // Move a folder given its existing unique ID, the ID of its new parent and its
 // new folder Name
 func (c *Client) MoveFolder(folderId, newParentId, newFolderName string, etags []string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"folders", folderId}, "/")
+	route := strings.Join([]string{FOLDER_ROUTE, folderId}, "/")
 	link := c.getURL(route, "")
 
 	content := map[string]string{"parent": newParentId, "name": newFolderName}
@@ -98,7 +97,7 @@ func (c *Client) MoveFolder(folderId, newParentId, newFolderName string, etags [
 }
 
 func (c *Client) DeleteFolder(folderId string, etags []string) error {
-	route := strings.Join([]string{"folders", folderId}, "/")
+	route := strings.Join([]string{FOLDER_ROUTE, folderId}, "/")
 	newHeader := http.Header{"If-Match": etags}
 	link := c.getURL(route, "")
 
@@ -112,7 +111,7 @@ func (c *Client) DeleteFolder(folderId string, etags []string) error {
 }
 
 func (c *Client) ShareFolder(folderId string) error {
-	route := strings.Join([]string{"folders", folderId, "is_shared"}, "/")
+	route := strings.Join([]string{FOLDER_ROUTE, folderId, "is_shared"}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.put(link, nil)

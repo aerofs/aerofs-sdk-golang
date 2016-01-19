@@ -14,10 +14,6 @@ const (
 	USERS_ROUTE = "users"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// User Related Calls
-
 func (c *Client) ListUsers(limit int, after, before *string) ([]byte, *http.Header, error) {
 	query := url.Values{}
 	query.Set("limit", strconv.Itoa(limit))

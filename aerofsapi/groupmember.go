@@ -8,12 +8,12 @@ import (
 	"strings"
 )
 
-// This file maps all routes exposed on the AeroFS API
-
-// GroupMember calls
+const (
+	GROUPMEMBER_ROUTE = "groups"
+)
 
 func (c *Client) ListGroupMembers(groupId string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"groups", groupId, "members"}, "/")
+	route := strings.Join([]string{GROUPMEMBER_ROUTE, groupId, "members"}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.get(link)
@@ -26,7 +26,7 @@ func (c *Client) ListGroupMembers(groupId string) ([]byte, *http.Header, error) 
 }
 
 func (c *Client) AddGroupMember(groupId, name string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"groups", groupId, "members"}, "/")
+	route := strings.Join([]string{GROUPMEMBER_ROUTE, groupId, "members"}, "/")
 	link := c.getURL(route, "")
 	newMember := map[string]string{
 		"name": name,
@@ -45,7 +45,7 @@ func (c *Client) AddGroupMember(groupId, name string) ([]byte, *http.Header, err
 }
 
 func (c *Client) GetGroupMember(groupId, email string) ([]byte, *http.Header, error) {
-	route := strings.Join([]string{"groups", groupId, "members", email}, "/")
+	route := strings.Join([]string{GROUPMEMBER_ROUTE, groupId, "members", email}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.get(link)
@@ -58,7 +58,7 @@ func (c *Client) GetGroupMember(groupId, email string) ([]byte, *http.Header, er
 }
 
 func (c *Client) RemoveMember(groupId, email string) error {
-	route := strings.Join([]string{"groups", groupId, "members", email}, "/")
+	route := strings.Join([]string{GROUPMEMBER_ROUTE, groupId, "members", email}, "/")
 	link := c.getURL(route, "")
 
 	res, err := c.del(link)
